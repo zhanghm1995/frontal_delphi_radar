@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 2.8.12)
+project(delphi_radar)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(OpenCV 2.4 REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+set(SRC_LIST TypeDef.h object_detection_radar.h frontal_delphi_radar.cpp main.cpp object_detection_radar.cpp)
+add_executable(delphi_radar ${SRC_LIST})
+target_link_libraries(delphi_radar ${OpenCV_LIBS} libpthread.so)
