@@ -49,7 +49,7 @@ catkin_package(
 include_directories(SYSTEM  ${catkin_INCLUDE_DIRS} ${ivcommon_INCLUDE_DIRS} ${LUA_INCLUDE_DIR} ${PCL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} src include)
 include_directories(${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
-set(SRC_LIST TypeDef.h object_detection_radar.h frontal_delphi_radar.cpp main.cpp object_detection_radar.cpp)
+set(SRC_LIST src/TypeDef.h src/object_detection_radar.h src/frontal_delphi_radar.cpp src/main.cpp src/object_detection_radar.cpp)
 add_executable(frontal_delphi_radar ${SRC_LIST})
 target_link_libraries(frontal_delphi_radar PUBLIC ${catkin_LIBRARIES}  ${ivcommon_LIBRARIES}  
 										${PCL_LIBRARIES}  
