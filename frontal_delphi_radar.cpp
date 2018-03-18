@@ -235,3 +235,9 @@ delphi_radar_target FrontalDelphiRadar::radar_target_data(){
   return radar_target_data_;
 }
 
+void FrontalDelphiRadar::set_self_vehicle_info(const double& yaw_rate,const double& vehicle_speed,const double& steering_angle){
+  self_vehicle_info_.yaw_rate = yaw_rate;
+  self_vehicle_info_.vehicle_speed = vehicle_speed;
+  self_vehicle_info_.steering_angle = steering_angle;
+}
+

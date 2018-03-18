@@ -39,6 +39,7 @@ public:
   bool Init();//init socket and bind socket
   bool Update();//update socket to receive data, should be called in a loop
   delphi_radar_target radar_target_data(); //get radar target data
+  void set_self_vehicle_info(const double& yaw_rate,const double& vehicle_speed,const double& steering_angle=0); //set self_vehicle_info member
 private:
   void Proc_Radar_Data();//parse radar data
   bool Send_Vehicle_Info();//send vehicle information to radar
@@ -57,6 +58,8 @@ private:
   unsigned char radar_data_buf_[RADAR_DATA_BUFFER];
   std::vector<unsigned int> radar_target_CAN_ID_vec_;
   delphi_radar_target radar_target_data_;
+  //send vehicle info
+  Vehicle_Info self_vehicle_info_;
 
 
 
