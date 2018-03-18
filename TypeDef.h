@@ -22,11 +22,10 @@ typedef struct _delphi_radar_target{
 }delphi_radar_target;
 
 
-
+//Vehicle information used to send to MMW Radar
 typedef struct Vehicle_Info_
 {
-	float Yaw_Rate;
-	float yawrate_phi;
-	float Vehicle_Speed;
-	float Steering_Angle;
+	float yaw_rate; //degree/s
+	float vehicle_speed;//Unit: m/s
+	float steering_angle;// Unit: degree
 }Vehicle_Info;

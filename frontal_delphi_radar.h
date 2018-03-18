@@ -2,7 +2,7 @@
  *    Function    ：receive udp data of delphi radar and parse them
  *    相关说明：
  *    作者    ：  zhanghm
- *    创建日期    ：20180307
+ *    创建日期    ：20180317
  *    修改记录：
 /*==================================================================*/
 #ifndef FRONTAL_DELPHI_RADAR_H_
@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 //project headers
-#include "TypeDef.h" //radar struct
+#include "TypeDef.h" //radar and vehicle information struct
 
 //const definition
 const int FRONTAL_RADAR_PORT = 4001;
@@ -37,7 +37,7 @@ public:
   ~FrontalDelphiRadar();
 
   bool Init();//init socket and bind socket
-  bool Update();//update socket to receive data, should be call in a loop
+  bool Update();//update socket to receive data, should be called in a loop
   delphi_radar_target radar_target_data(); //get radar target data
 private:
   void Proc_Radar_Data();//parse radar data
