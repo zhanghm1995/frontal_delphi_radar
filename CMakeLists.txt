@@ -47,7 +47,7 @@ catkin_package(
 )
 
 #include headers
-include_directories(SYSTEM  ${catkin_INCLUDE_DIRS} ${ivcommon_INCLUDE_DIRS} ${LUA_INCLUDE_DIR} ${PCL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} src include)
+include_directories(SYSTEM  ${catkin_INCLUDE_DIRS} ${sensor_driver_INCLUDE_DIRS} ${ivcommon_INCLUDE_DIRS} ${LUA_INCLUDE_DIR} ${PCL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} src include)
 include_directories(${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
 set(SRC_LIST src/TypeDef.h src/object_detection_radar.h src/frontal_delphi_radar.cpp src/main.cpp src/object_detection_radar.cpp)
@@ -56,7 +56,7 @@ target_link_libraries(frontal_delphi_radar PUBLIC ${catkin_LIBRARIES}  ${ivcommo
 										${PCL_LIBRARIES}  
 										${Boost_LIBRARIES}  
 										${OpenCV_LIBS} 
-										${sensor_driver_INCLUDE_DIRS} 
+										${sensor_driver_LIBRARIES} 
 										utils ivsensor glog gflags )
 
 ##############################
