@@ -240,4 +240,7 @@ void FrontalDelphiRadar::set_self_vehicle_info(const double& yaw_rate,const doub
   self_vehicle_info_.vehicle_speed = vehicle_speed;
   self_vehicle_info_.steering_angle = steering_angle;
 }
+void FrontalDelphiRadar::set_self_vehicle_info(const Vehicle_Info& vehicle_info){
+  self_vehicle_info_ = vehicle_info;
+}
 

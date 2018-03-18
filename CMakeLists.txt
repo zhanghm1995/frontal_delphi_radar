@@ -19,6 +19,7 @@ set(PACKAGE_DEPENDENCIES
   visualization_msgs
   cv_bridge  
   image_transport
+  sensor_driver_msgs
 )
 
 ##############################
