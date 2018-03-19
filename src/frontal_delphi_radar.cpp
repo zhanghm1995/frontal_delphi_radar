@@ -169,10 +169,27 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
     tmpdata[3]=buf[8];tmpdata[4]=buf[9];tmpdata[5]=buf[10];
     tmpdata[6]=buf[11];tmpdata[7]=buf[12];
 
-    //parsing the radar data we want
+    /*******************************/
+    /*parsing the radar data we want*/
+    /*******************************/
+    //get the most dangerous target ID
+    unsigned short TrackID_1,TrackID_2;
+    if(tmpCanID == 0x4E3){
+      TrackID_1 = tmpdata[1];//动态ACC目标
+      TrackID_2 = tmpdata[7];//静态ACC目标
+    }
+    radar_target_data_.ACC_Target_ID = TrackID_1; //choose dynamic ACC target first
+    if(TrackID_1 == 0){
+      radar_target_data_.ACC_Target_ID = TrackID_2;
+    }
     vector<unsigned int>::iterator iter = find(radar_target_CAN_ID_vec_.begin(),radar_target_CAN_ID_vec_.end(),tmpCanID);
     if(iter!=radar_target_CAN_ID_vec_.end()){ //obtain valid radar target data
-      int m = iter-radar_target_CAN_ID_vec_.begin();//the m-th target
+      int m = iter-radar_target_CAN_ID_vec_.begin();//the m-th target, m = 0~63
+      radar_target_data_.delphi_detection_array[m].target_ID = m+1; //target_ID = 1~64
+      //target status
+      unsigned short temp_S1 = tmpdata[1];
+      unsigned short temp_S2 = temp_S1&0x00E0;
+      radar_target_data_.delphi_detection_array[m].status = temp_S2>>5;
       printf("mmmmmmmmm is %d \n",m);
       unsigned short temp_D1;
       unsigned short temp_D2;

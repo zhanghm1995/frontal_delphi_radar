@@ -43,7 +43,7 @@ public:
   void set_self_vehicle_info(const double& yaw_rate,const double& vehicle_speed,const double& steering_angle=0); //set self_vehicle_info member
   void set_self_vehicle_info(const Vehicle_Info& vehicle_info);
 private:
-  void Proc_Radar_Data();//parse radar data
+  void Proc_Radar_Data();//important! parse radar data
   bool Send_Vehicle_Info();//send vehicle information to radar
   bool Send_Triggle_Signal();//send triggle signal to radar to get normal data
 
