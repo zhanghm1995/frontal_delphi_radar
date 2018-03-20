@@ -133,7 +133,10 @@ void ObjectDetection::draw_basic_info()
 
 void ObjectDetection::get_radar_Data(const delphi_radar_target& radar)
 {
-
+  m_ACC_ID=radar.ACC_Target_ID;
+#ifdef SAVE_GET_DATA
+    fprintf(fp_radar_file,"%d ",m_ACC_ID);
+#endif
     for (int i = 0; i < NUM; ++i)
     {
         delphi_detection_array[i].target_ID= radar.delphi_detection_array[i].target_ID;
@@ -148,8 +151,31 @@ void ObjectDetection::get_radar_Data(const delphi_radar_target& radar)
         delphi_detection_array[i].moving_slow = radar.delphi_detection_array[i].moving_slow;
         delphi_detection_array[i].status = radar.delphi_detection_array[i].status;
         //delphi_detection_array[i].distance = sqrt(pow(delphi_detection_array[i].x, 2) + pow(delphi_detection_array[i].y, 2));//实际上这项有原始数据，未存储
+
+#ifdef SAVE_GET_DATA
+        /*---------------毫米波雷达数据保存--------------------*/
+
+        /***********************************************************
+        valid x y range  status moving moving_fast moving_slow
+        ***********************************************************/
+        fprintf(fp_radar_file,"%d %d %.3f %.3f %.3f %.3f %.3f ",
+            radar.delphi_detection_array[i].target_ID,
+            radar.delphi_detection_array[i].status,
+            radar.delphi_detection_array[i].angle,
+            radar.delphi_detection_array[i].range,
+            radar.delphi_detection_array[i].x,
+            radar.delphi_detection_array[i].y,
+            radar.delphi_detection_array[i].v
+            );
+
+        /*---------------毫米波雷达数据保存--------------------*/
+#endif
     }
-    m_ACC_ID=radar.ACC_Target_ID;
+#ifdef SAVE_GET_DATA
+    fprintf(fp_radar_file,"\n");
+#endif
+
+
 
 
 

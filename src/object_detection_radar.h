@@ -33,7 +33,7 @@ using std::vector;
 #define RADAR2CAR 1.5 //毫米波到车后轴距离，米制单位
 #define XLim 2.2//感兴趣目标点在毫米波雷达x正方向最大距离限制
 
-//#define SAVE_GET_DATA //是否保存获得的待处理的毫米波数据和自身车辆信息
+#define SAVE_GET_DATA //是否保存获得的待处理的毫米波数据和自身车辆信息
 
 
 const int persMap_Middle = (PLANE_WIDTH - 1) / 2; //鸟瞰图宽度中点坐标

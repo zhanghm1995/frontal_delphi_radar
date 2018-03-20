@@ -179,9 +179,9 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
       TrackID_2 = tmpdata[7];//静态ACC目标
     }
     radar_target_data_.ACC_Target_ID = TrackID_1; //choose dynamic ACC target first
-    if(TrackID_1 == 0){
-      radar_target_data_.ACC_Target_ID = TrackID_2;
-    }
+//    if(TrackID_1 == 0){
+//      radar_target_data_.ACC_Target_ID = TrackID_2;
+//    }
     vector<unsigned int>::iterator iter = find(radar_target_CAN_ID_vec_.begin(),radar_target_CAN_ID_vec_.end(),tmpCanID);
     if(iter!=radar_target_CAN_ID_vec_.end()){ //obtain valid radar target data
       int m = iter-radar_target_CAN_ID_vec_.begin();//the m-th target, m = 0~63
