@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <math.h>
 
-const char* FRONTAL_RADAR_IP = "192.168.0.178";
+const char* FRONTAL_RADAR_IP = "192.168.0.25";
 using std::vector;
 #define PI 3.1415926535898
 const double toRAD = PI/180.0;
@@ -51,9 +51,6 @@ bool FrontalDelphiRadar::Init(){
 }
 
 bool FrontalDelphiRadar::Update(){
-  //send initial data to radar
-  Send_Triggle_Signal();
-
   //receive radar socket data
   remaddrlen_ = sizeof(remaddr_);
   recv_len_ = recvfrom(radar_socket_,radar_data_buf_,RADAR_DATA_BUFFER,0,(struct sockaddr*)&remaddr_,&remaddrlen_);
@@ -66,6 +63,9 @@ bool FrontalDelphiRadar::Update(){
   }
   else
     Proc_Radar_Data();
+  //send initial data to radar
+  //Send_Triggle_Signal();
+  return true;
   //usleep(50000);
 }
 
@@ -190,7 +190,7 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
       unsigned short temp_S1 = tmpdata[1];
       unsigned short temp_S2 = temp_S1&0x00E0;
       radar_target_data_.delphi_detection_array[m].status = temp_S2>>5;
-      printf("mmmmmmmmm is %d \n",m);
+      printf("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm is %d \n",m);
       unsigned short temp_D1;
       unsigned short temp_D2;
       unsigned short temp_V1;
