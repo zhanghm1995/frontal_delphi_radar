@@ -39,6 +39,7 @@ public:
   bool Init();//init socket and bind socket
   bool Update();//update socket to receive data, should be called in a loop
   delphi_radar_target radar_target_data(); //get radar target data
+  Vehicle_Info vehicle_info(); //get vehicle information
   //get self vehicle information
   void set_self_vehicle_info(const double& yaw_rate,const double& vehicle_speed,const double& steering_angle=0); //set self_vehicle_info member
   void set_self_vehicle_info(const Vehicle_Info& vehicle_info);

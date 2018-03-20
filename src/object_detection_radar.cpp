@@ -175,10 +175,6 @@ void ObjectDetection::get_radar_Data(const delphi_radar_target& radar)
     fprintf(fp_radar_file,"\n");
 #endif
 
-
-
-
-
 }
 
 
@@ -254,6 +250,8 @@ void ObjectDetection::main_function2()
         show_result(vecObj_Temp);//有效目标点全部显示
     }
 
+    ShowACCTarget(m_ACC_ID);
+
 //    cvNamedWindow("delphi_image",CV_WINDOW_NORMAL);
 //    cvShowImage("delphi_image", m_Delphi_img);
 //
@@ -317,6 +315,9 @@ void ObjectDetection::show_result(moving_object_millimeter& obj_interest) //显�
 
     //鸟瞰图中显示红色点
     cvCircle(m_Delphi_img,delphi_pos, 1, cvScalar(0, 0, 255), 6);
+    //ACC target ID
+    sprintf(text,"ACC: %d",obj_interest.target_ID);
+    cvPutText(m_Delphi_img,text,cvPoint(160,15),&cf,cvScalar(0,0,255));//red color
 
 }
 
@@ -345,16 +346,20 @@ void ObjectDetection::show_result(vector<moving_object_millimeter>& valid_obj)//
 
 }
 
-void ObjectDetection::show_result2(double& obj_interest)
+void ObjectDetection::ShowACCTarget(const int& ACC_ID)
 {
-
-
+  if(ACC_ID != 0)//has ACC target
+  {
     CvPoint delphi_pos;
     //横坐标等于中点,只显示纵坐标
-    delphi_pos.x = persMap_Middle;
-    delphi_pos.y = (PLANE_HEIGHT - 1) - ((int)obj_interest + RADAR2CAR)*METER2PIXEL;
+    delphi_pos.x = persMap_Middle+ delphi_detection_array[ACC_ID-1].x*METER2PIXEL;
+    delphi_pos.y = (PLANE_HEIGHT - 1) - (delphi_detection_array[ACC_ID-1].y + RADAR2CAR)*METER2PIXEL;
+
     //鸟瞰图中显示红色点
-    cvCircle(m_Delphi_img,delphi_pos, 1, cvScalar(0, 0, 255), 2);
+    cvCircle(m_Delphi_img,delphi_pos, 1, cvScalar(0, 0, 255), 6);
+  }
+  sprintf(text,"ACC: %d",ACC_ID);
+  cvPutText(m_Delphi_img,text,cvPoint(160,15),&cf,cvScalar(0,0,255));//red color
 }
 
 moving_object_millimeter ObjectDetection::getSendData()

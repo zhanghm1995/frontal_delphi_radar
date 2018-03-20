@@ -53,7 +53,7 @@ public:
 
   void show_result(moving_object_millimeter& obj_interest); //得到最终显示画面
   void show_result(vector<moving_object_millimeter>& valid_obj);//显示全部有效目标
-  void show_result2(double& obj_interest);
+  void ShowACCTarget(const int& ACC_ID); //单独显示ACC目标
 
   void compare(); //生成单独不用算法的ACC目标，对比效果
   void draw_basic_info(); //绘制基本信息

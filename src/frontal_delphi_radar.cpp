@@ -64,7 +64,7 @@ bool FrontalDelphiRadar::Update(){
   else
     Proc_Radar_Data();
   //send initial data to radar
-  //Send_Triggle_Signal();
+  Send_Triggle_Signal();
   return true;
   //usleep(50000);
 }
@@ -133,7 +133,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
   send_buf_4F0[2]=tmpCanID2;
   send_buf_4F0[3]=tmpCanID3;
   send_buf_4F0[4]=tmpCanID4;
-  send_buf_4F0[5]=(speed_can>>3); //host vehicle spedd, m/s
+  send_buf_4F0[5]=(speed_can>>3); //车速, m/s
   send_buf_4F0[6]=(((speed_can&0x07)<<5)|((yawrate_can>>8)&0x0F)|(bfsign<<4));
   send_buf_4F0[7]=((yawrate_can)&0xFF);
   send_buf_4F0[8]=(0x80|(radius>>8));//横摆角速度有效位,转弯半径
@@ -249,7 +249,10 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
 
 
 delphi_radar_target FrontalDelphiRadar::radar_target_data(){
-  return radar_target_data_;
+  return this->radar_target_data_;
+}
+Vehicle_Info FrontalDelphiRadar::vehicle_info(){
+  return this->self_vehicle_info_;
 }
 
 void FrontalDelphiRadar::set_self_vehicle_info(const double& yaw_rate,const double& vehicle_speed,const double& steering_angle){
