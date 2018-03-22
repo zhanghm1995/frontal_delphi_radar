@@ -111,50 +111,91 @@ bool FrontalDelphiRadar::Send_Triggle_Signal(){
 }
 
 bool FrontalDelphiRadar::Send_Vehicle_Info(){
-  //TODO: vehicle info value assignment
-  int speed_can = 0;
-  short yawrate_can = 0;
-  int radius;
-  unsigned char steersign;
-  short steer_can = 0;
-  unsigned char bfsign = 0;
+  //vehicle info value assignment
+   //车速
+   int speed_can = (int)(self_vehicle_info_.vehicle_speed/0.0625f+0.5f);
+   //方向盘转角
+   float steer_phi = self_vehicle_info_.steering_angle;
+   unsigned char steersign = steer_phi>0?1:0;
+   short steer_can = (short)abs(steer_phi);
+   unsigned char bfsign = 0; //默认为0即可
+   //横摆角速度
+   float yawrate_phi = self_vehicle_info_.yaw_rate+0.2f; //0.2用来调整偏差，根据实际情况设定
+   if(yawrate_phi<-128)
+   {
+     yawrate_phi = -128;
+   }
+   else if(yawrate_phi>127.9375)
+   {
+     yawrate_phi = 127;
+   }
+   short yawrate_can = (short)(yawrate_phi/0.0625f);
+   //转弯半径
+   int radius;
+   if(abs(yawrate_phi/180.0f*PI)<1.0f/8191)
+   {
+     if(yawrate_phi<0) radius = -8192;
+     else              radius = 8192;
+   }
+   else{
+     radius = (int)(1.0f/(yawrate_phi/180.0f*PI)+0.5f);
+   }
 
-  //Send info to ID 0x4F0
-  unsigned char FI=0b00001000;
-  unsigned char tmpCanID1=0b00000000;
-  unsigned char tmpCanID2=0b00000000;
-  unsigned char tmpCanID3=0b00000100; //04
-  unsigned char tmpCanID4=0b11110000; //F0
-  unsigned char send_buf_4F0[13];
-  memset(send_buf_4F0,0,sizeof(send_buf_4F0));
+   //Send info to ID 0x4F0
+   unsigned char FI=0b00001000;
+   unsigned char tmpCanID1=0b00000000;
+   unsigned char tmpCanID2=0b00000000;
+   unsigned char tmpCanID3=0b00000100; //04
+   unsigned char tmpCanID4=0b11110000; //F0
+   unsigned char send_buf_4F0[13];
+   memset(send_buf_4F0,0,sizeof(send_buf_4F0));
 
-  send_buf_4F0[0]=FI;
-  send_buf_4F0[1]=tmpCanID1;
-  send_buf_4F0[2]=tmpCanID2;
-  send_buf_4F0[3]=tmpCanID3;
-  send_buf_4F0[4]=tmpCanID4;
-  send_buf_4F0[5]=(speed_can>>3); //车速, m/s
-  send_buf_4F0[6]=(((speed_can&0x07)<<5)|((yawrate_can>>8)&0x0F)|(bfsign<<4));
-  send_buf_4F0[7]=((yawrate_can)&0xFF);
-  send_buf_4F0[8]=(0x80|(radius>>8));//横摆角速度有效位,转弯半径
-  send_buf_4F0[9]=(radius&0xFF);
-  send_buf_4F0[10]=(0x80|(steersign<<6)|(steer_can>>5));
-  send_buf_4F0[11]=((steer_can&0x1F)<<3);
+   send_buf_4F0[0]=FI;
+   send_buf_4F0[1]=tmpCanID1;
+   send_buf_4F0[2]=tmpCanID2;
+   send_buf_4F0[3]=tmpCanID3;
+   send_buf_4F0[4]=tmpCanID4;
+   send_buf_4F0[5]=(speed_can>>3); //车速, m/s
+   send_buf_4F0[6]=(((speed_can&0x07)<<5)|((yawrate_can>>8)&0x0F)|(bfsign<<4));//横摆角速度，行驶方向
+   send_buf_4F0[7]=((yawrate_can)&0xFF);//横摆角速度
+   send_buf_4F0[8]=(0x80|(radius>>8));//横摆角速度有效位,转弯半径
+   send_buf_4F0[9]=(radius&0xFF);//转弯半径
+   send_buf_4F0[10]=(0x80|(steersign<<6)|(steer_can>>5));//方向盘转角方向，方向盘转角
+   send_buf_4F0[11]=((steer_can&0x1F)<<3);
+   int send_len = sendto(radar_socket_,send_buf_4F0,sizeof(send_buf_4F0),0,(sockaddr*)&remaddr_,sizeof(remaddr_));
+   if(send_len<0){
+     perror("[ERROR]cannot send send_buf_4F0 data!");
+   }
 
 
-  //Send info to ID 0x4F1
-  unsigned char send_buf_4F1[13];
-  memset(send_buf_4F1,0,sizeof(send_buf_4F1));
-  send_buf_4F1[0]=0b00001000;
-  send_buf_4F1[1]=0x00;
-  send_buf_4F1[2]=0x00;
-  send_buf_4F1[3]=0x04;
-  send_buf_4F1[4]=0xF1;
-  send_buf_4F1[10]= 0;//横向安装偏差
-  send_buf_4F1[11]=(1<<7)|(1<<6)|63;
-  send_buf_4F1[12] =(1<<5);//速度有效位置
+   //Send info to ID 0x4F1
+   unsigned char send_buf_4F1[13];
+   memset(send_buf_4F1,0,sizeof(send_buf_4F1));
+   send_buf_4F1[0]=0b00001000;
+   send_buf_4F1[1]=0x00;
+   send_buf_4F1[2]=0x00;
+   send_buf_4F1[3]=0x04;
+   send_buf_4F1[4]=0xF1;
+   send_buf_4F1[10]= 0;//横向安装偏差为0,
+   send_buf_4F1[11]=(1<<7)|(1<<6)|63;//雷达辐射命令位置1，阻塞关闭位置1，最大跟踪目标数64
+   send_buf_4F1[12] =(1<<5);//速度有效位置
+   send_len = sendto(radar_socket_,send_buf_4F1,sizeof(send_buf_4F1),0,(sockaddr*)&remaddr_,sizeof(remaddr_));
+   if(send_len<0){
+     perror("[ERROR]cannot send send_buf_4F1 data!");
+   }
+   //Send info to ID 0x5F2
+   unsigned char send_buf_5F2[13];
+   memset(send_buf_5F2,0,sizeof(send_buf_5F2));
+   send_buf_5F2[0] = 0b00001000;
+   send_buf_5F2[7] = (10>>1);//长距离模式的角度为10度
+   send_buf_5F2[8] = ((10&0x01)<<7)|45;//短距离模式的角度是45度
+   send_buf_5F2[9] = 65; //雷达的安装高度为45cm
+   send_len = sendto(radar_socket_,send_buf_5F2,sizeof(send_buf_5F2),0,(sockaddr*)&remaddr_,sizeof(remaddr_));
+   if(send_len<0){
+     perror("[ERROR]cannot send send_buf_5F2 data!");
+   }
 
-  //Send info to ID 0x5F2
+   return true;
 
 
 }
