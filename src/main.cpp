@@ -72,7 +72,7 @@ public:
       //cout<<"++++++++++"<<endl;
       frontal_delphi_receiver_.set_self_vehicle_info(vehicle_info_received_);
       frontal_delphi_receiver_.Update();
-      usleep(25);
+      usleep(100);
       //data visualizition
 //      delphi_radar_target radar_data=frontal_delphi_receiver_.radar_target_data();
 //      object_detection_.get_radar_Data(radar_data);

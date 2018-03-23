@@ -22,9 +22,18 @@
 //project headers
 #include "TypeDef.h" //radar and vehicle information struct
 
+#define TOYOTA
+#ifdef TOYOTA
+//const definition
+const int FRONTAL_RADAR_PORT = 4001;
+const int FRONTAL_RADAR_LISTEN_PORT = 8101; //local listen port
+#endif
+
+#ifdef HUACHEN
 //const definition
 const int FRONTAL_RADAR_PORT = 4001;
 const int FRONTAL_RADAR_LISTEN_PORT = 8010; //local listen port
+#endif
 
 const short RADAR_DATA_BUFFER = 650; //buffer 1000 bytes
 

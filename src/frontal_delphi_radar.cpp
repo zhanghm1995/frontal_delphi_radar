@@ -3,7 +3,14 @@
 #include <algorithm>
 #include <math.h>
 
-const char* FRONTAL_RADAR_IP = "192.168.0.25";
+#ifdef HUACHEN
+const char* FRONTAL_RADAR_IP = "192.168.0.178";
+#endif
+
+#ifdef TOYOTA
+const char* FRONTAL_RADAR_IP = "192.168.0.12";
+#endif
+
 using std::vector;
 #define PI 3.1415926535898
 const double toRAD = PI/180.0;
@@ -201,6 +208,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
 }
 void FrontalDelphiRadar::Proc_Radar_Data(){
   int can_frame_count = recv_len_/13;//each can frame contains 13 bytes
+//  printf("recv_len_ is %d ========can_frame_count is %d \n",recv_len_,can_frame_count);
   for(int i=0;i<can_frame_count;++i){//a udp data frame may contain numbers of CAN frames
     unsigned char* buf = &(radar_data_buf_[i*13]);
     unsigned int tmpCanID;
