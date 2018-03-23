@@ -10,7 +10,7 @@
 
 
   <arg name="configfile" default="$(find sensor_driver)/config/configmulti.xml" />
-  <arg name="logdir" default="--log_dir=/home/jkj/catkin_ws/log" />
+  <arg name="logdir" default="--log_dir=/home/zhanghm/catkin_ws/log" />
   <arg name="glogparam" default="--logtostderr=0  --colorlogtostderr=1 --stderrthreshold=5   $(arg logdir)" />
 
   <node pkg="sensor_driver" type="masternode" name="masternode" args="$(arg glogparam)" output="screen">
@@ -30,11 +30,5 @@
   </node>
       <node pkg="sensor_driver" type="getinsdata" name="getinsdata" args="--logtostderr=0  --colorlogtostderr=1 --stderrthreshold=2   $(arg logdir)" output="screen">
   </node>
-
-
-
-<group if="$(arg rviz)">
-    <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find test)/rviz_cfg/covgrid_mapping.rviz" />
-  </group>
 
 </launch>
