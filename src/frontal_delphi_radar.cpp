@@ -281,9 +281,9 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
       //calculate x,y   Unit: m
       radar_target_data_.delphi_detection_array[m].x=radar_target_data_.delphi_detection_array[m].range*sin(radar_target_data_.delphi_detection_array[m].angle*toRAD);
       radar_target_data_.delphi_detection_array[m].y=radar_target_data_.delphi_detection_array[m].range*cos(radar_target_data_.delphi_detection_array[m].angle*toRAD);
+    }//end if(iter!=radar_target_CAN_ID_vec_.end())
 
-    }
-
+#if 1 //解析一些运动属性
     if(tmpCanID==0x540)
     {
       ////先解析Group_ID
@@ -459,9 +459,9 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
         temp_S2 = temp_S1>>6;
         radar_target_data_.delphi_detection_array[63].moving_slow=temp_S2;
         break;
-      }
-    }
-
+      }//end switch
+    }//end if(tmpCanID==0x540)
+#endif
 
   }
 

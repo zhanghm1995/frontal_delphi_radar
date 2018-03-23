@@ -91,7 +91,7 @@ public:
     while(!processthreadfinished_){
       //data visualizition
       delphi_radar_target radar_data=frontal_delphi_receiver_.radar_target_data();
-      object_detection_.get_radar_Data(radar_data);
+      object_detection_.get_radar_Data(radar_data);//接收毫米波雷达数据并保存
       object_detection_.main_function2();
       IplImage* delphi_image = object_detection_.m_Delphi_img;
       cvNamedWindow("delphi_image",CV_WINDOW_NORMAL);
