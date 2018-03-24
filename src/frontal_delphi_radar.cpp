@@ -71,7 +71,7 @@ bool FrontalDelphiRadar::Update(){
   remaddrlen_ = sizeof(remaddr_);
   recv_len_ = recvfrom(radar_socket_,radar_data_buf_,RADAR_DATA_BUFFER,0,(struct sockaddr*)&remaddr_,&remaddrlen_);
   //printf("recv length is %d \n",recv_len_);
-  //printf("remote address is %s and %d\n",inet_ntoa(remaddr_.sin_addr),ntohs(remaddr_.sin_port));
+  printf("remote address is %s and %d\n",inet_ntoa(remaddr_.sin_addr),ntohs(remaddr_.sin_port));
   if(recv_len_<0){
     perror("[ERROR]cannot receive radar data!");
     close(radar_socket_);
@@ -180,7 +180,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    send_buf_4F0[7]=((yawrate_can)&0xFF);//横摆角速度
    send_buf_4F0[8]=(0x80|(0<<6)|(radius>>8));//横摆角速度有效位,转弯半径
    send_buf_4F0[9]=(radius&0xFF);//转弯半径
-   send_buf_4F0[10]=(0x80|(steersign<<6)|(steer_can>>5));//方向盘转角有效位，方向盘转角方向，方向盘转角
+   send_buf_4F0[10]=(0x00|(steersign<<6)|(steer_can>>5));//方向盘转角有效位，方向盘转角方向，方向盘转角
    send_buf_4F0[11]=((steer_can&0x1F)<<3);
    //发送
    int send_len = sendto(radar_socket_,send_buf_4F0,sizeof(send_buf_4F0),0,(sockaddr*)&remaddr_,sizeof(remaddr_));
@@ -227,8 +227,8 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
 //  printf("recv_len_ is %d ========can_frame_count is %d \n",recv_len_,can_frame_count);
   for(int i=0;i<can_frame_count;++i){//a udp data frame may contain numbers of CAN frames
     unsigned char* buf = &(radar_data_buf_[i*13]);
-    unsigned int tmpCanID;
-    unsigned char tmpdata[8];
+    unsigned int tmpCanID = 0;
+    unsigned char tmpdata[8] = {0};
     tmpCanID=buf[1]<<24|buf[2]<<16|buf[3]<<8|buf[4];
     tmpdata[0]=buf[5];tmpdata[1]=buf[6];tmpdata[2]=buf[7];
     tmpdata[3]=buf[8];tmpdata[4]=buf[9];tmpdata[5]=buf[10];
@@ -238,7 +238,7 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
     /*parsing the radar data we want*/
     /*******************************/
     //get the most dangerous target ID
-    unsigned short TrackID_1,TrackID_2;
+    unsigned short TrackID_1 = 0,TrackID_2 = 0;
     if(tmpCanID == 0x4E3){
       TrackID_1 = tmpdata[1];//动态ACC目标
       TrackID_2 = tmpdata[7];//静态ACC目标

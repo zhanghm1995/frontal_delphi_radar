@@ -25,6 +25,9 @@
 
   <node pkg="frontal_delphi_radar" type="frontal_delphi_radar" name="frontal_delphi_radar" args="--logtostderr=0  --colorlogtostderr=1 --stderrthreshold=0   $(arg logdir)" output="screen">
   </node>
+  
+  <node pkg="frontal_delphi_radar" type="get_radar_data" name="get_radar_data" args="--logtostderr=0  --colorlogtostderr=1 --stderrthreshold=0   $(arg logdir)" output="screen">
+  </node>
 
 
 

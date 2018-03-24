@@ -55,8 +55,8 @@ public:
       radar_data_.delphi_detection_array[i].moving = radar_msg->delphi_detection_array[i].moving;
       radar_data_.delphi_detection_array[i].moving_fast = radar_msg->delphi_detection_array[i].moving_fast;
       radar_data_.delphi_detection_array[i].moving_slow = radar_msg->delphi_detection_array[i].moving_slow;
-      radar_data_.ACC_Target_ID = radar_msg->ACC_Target_ID;
     }
+    radar_data_.ACC_Target_ID = radar_msg->ACC_Target_ID;
 
   }
   void process()
