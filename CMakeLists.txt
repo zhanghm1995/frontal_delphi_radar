@@ -57,6 +57,10 @@ include_directories(SYSTEM  ${catkin_INCLUDE_DIRS} ${sensor_driver_INCLUDE_DIRS}
 include_directories(${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
 set(SRC_LIST src/TypeDef.h src/object_detection_radar.h src/frontal_delphi_radar.cpp src/main.cpp src/object_detection_radar.cpp)
+##############################
+#### add executable ##########
+##############################
+
 add_executable(frontal_delphi_radar ${SRC_LIST})
 target_link_libraries(frontal_delphi_radar PUBLIC ${catkin_LIBRARIES}  ${ivcommon_LIBRARIES}  
 										${PCL_LIBRARIES}  
@@ -64,18 +68,19 @@ target_link_libraries(frontal_delphi_radar PUBLIC ${catkin_LIBRARIES}  ${ivcommo
 										${OpenCV_LIBS} 
 										${sensor_driver_LIBRARIES} 
 										utils ivsensor glog gflags )
-
+add_executable(get_radar_data src/get_radar_data.cpp src/frontal_delphi_radar.cpp)
+target_link_libraries(get_radar_data ${catkin_LIBRARIES}  ${ivcommon_LIBRARIES}  ${Boost_LIBRARIES} ${sensor_driver_LIBRARIES})
 ##############################
 ###### install packages #########
 ##############################
-install(TARGETS frontal_delphi_radar
+install(TARGETS frontal_delphi_radar get_radar_data
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(
-  TARGETS frontal_delphi_radar
+  TARGETS frontal_delphi_radar get_radar_data
   EXPORT frontal_delphi_radarExport
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

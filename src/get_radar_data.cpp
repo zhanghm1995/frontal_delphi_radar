@@ -25,7 +25,7 @@ public:
       //      image_transport_nh_(nodehandle), //for transport image
       processthread_(NULL),
       processthreadfinished_ (false),
-      visualize_thread_(NULL)
+      pub_radar_data_thread_(NULL)
   {
     memset(&vehicle_info_received_,0,sizeof(vehicle_info_received_));
     init();
@@ -34,15 +34,16 @@ public:
   {
     processthreadfinished_ = true;
     processthread_->join();
-    visualize_thread_->join();
+    pub_radar_data_thread_->join();
   }
 
   void init()
   {
     subECUData_ = nodehandle_.subscribe<sensor_driver_msgs::ECUData>("ecudata", 1, boost::bind(&PostProcess::ECUDataHandler,this,_1));//
     subImuData_ = nodehandle_.subscribe<sensor_msgs::Imu>("imudata", 1, boost::bind(&PostProcess::ImuDataHandler,this,_1));//
+    pubRadarData_ = nodehandle_.advertise<frontal_delphi_radar::RadarData>("radardata",1);
     processthread_ = new boost::thread(boost::bind(&PostProcess::process,this));
-    //visualize_thread_ = new boost::thread(boost::bind(&PostProcess::visualize,this));
+    pub_radar_data_thread_ = new boost::thread(boost::bind(&PostProcess::PublishData,this));
   }
 
 
@@ -61,8 +62,6 @@ public:
 
   void process()
   {
-
-    object_detection_.draw_basic_info();
     bool flag = frontal_delphi_receiver_.Init();//build connection to MMW radar
     if(flag == true){
       cout<<"[INFO] MMW Radar UDP socket has been built!"<<endl;
@@ -75,25 +74,34 @@ public:
     {
       frontal_delphi_receiver_.set_self_vehicle_info(vehicle_info_received_);
       frontal_delphi_receiver_.Update();
+
       usleep(100);
     }
 
   }
-  void visualize(){
+  void PublishData(){
     while(!processthreadfinished_){
-      //data visualizition
+      //data publish
       delphi_radar_target radar_data=frontal_delphi_receiver_.radar_target_data();
-      object_detection_.get_radar_Data(radar_data);//接收毫米波雷达数据并保存
-      object_detection_.main_function2();
-      IplImage* delphi_image = object_detection_.m_Delphi_img;
-      cvNamedWindow("delphi_image",CV_WINDOW_NORMAL);
-      cvShowImage("delphi_image", delphi_image);
-
-      int key = cvWaitKey(10);
-      if(key == 32)
-        cvWaitKey(0);
-      if(key == 27)
-        break;
+      frontal_delphi_radar::RadarData radar_data_msg;
+      frontal_delphi_radar::RadarPoint radar_point_msg;
+      for(int i=0;i<64;++i)
+      {
+        radar_point_msg.target_ID = radar_data.delphi_detection_array[i].target_ID;
+        radar_point_msg.range = radar_data.delphi_detection_array[i].range;
+        radar_point_msg.v = radar_data.delphi_detection_array[i].v;
+        radar_point_msg.angle = radar_data.delphi_detection_array[i].angle;
+        radar_point_msg.x = radar_data.delphi_detection_array[i].x;
+        radar_point_msg.y = radar_data.delphi_detection_array[i].y;
+        radar_point_msg.valid = radar_data.delphi_detection_array[i].valid;
+        radar_point_msg.status = radar_data.delphi_detection_array[i].status;
+        radar_point_msg.moving = radar_data.delphi_detection_array[i].moving;
+        radar_point_msg.moving_fast = radar_data.delphi_detection_array[i].moving_fast;
+        radar_point_msg.moving_slow = radar_data.delphi_detection_array[i].moving_slow;
+        radar_data_msg.delphi_detection_array[i]=radar_point_msg;
+        radar_data_msg.ACC_Target_ID = radar_data.ACC_Target_ID;
+      }
+      pubRadarData_.publish(radar_data_msg);
     }
   }
 
@@ -103,13 +111,13 @@ private:
   ros::NodeHandle& nodehandle_;
   ros::Subscriber subImuData_ ;//sub yaw rate
   ros::Subscriber subECUData_ ;//sub vehicle speed
+  ros::Publisher pubRadarData_;
   //multi thread
   boost::thread* processthread_;
-  boost::thread* visualize_thread_;
+  boost::thread* pub_radar_data_thread_;
   bool processthreadfinished_;
   //zhanghm add: 20180129
   FrontalDelphiRadar frontal_delphi_receiver_;
-  ObjectDetection object_detection_;
   Vehicle_Info vehicle_info_received_; //收到的车辆状态信息
 };
 
