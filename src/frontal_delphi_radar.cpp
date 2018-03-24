@@ -16,6 +16,11 @@ using std::vector;
 const double toRAD = PI/180.0;
 FrontalDelphiRadar::FrontalDelphiRadar(){
   memset((char*)&myaddr_,0,sizeof(myaddr_));
+  memset(&remaddr_,0,sizeof(remaddr_));
+  remaddr_.sin_addr.s_addr = inet_addr(FRONTAL_RADAR_IP);//IP
+  remaddr_.sin_family = AF_INET;
+  remaddr_.sin_port = htons(FRONTAL_RADAR_PORT); //port
+
   //initialize the parsing parameters
   radar_target_CAN_ID_vec_.resize(64);
   for(vector<unsigned int>::iterator it=radar_target_CAN_ID_vec_.begin();it!=radar_target_CAN_ID_vec_.end();++it){
@@ -58,6 +63,10 @@ bool FrontalDelphiRadar::Init(){
 }
 
 bool FrontalDelphiRadar::Update(){
+  //send initial data to radar
+  //Send_Triggle_Signal();
+  //Send vehicle info
+  Send_Vehicle_Info();
   //receive radar socket data
   remaddrlen_ = sizeof(remaddr_);
   recv_len_ = recvfrom(radar_socket_,radar_data_buf_,RADAR_DATA_BUFFER,0,(struct sockaddr*)&remaddr_,&remaddrlen_);
@@ -70,13 +79,18 @@ bool FrontalDelphiRadar::Update(){
   }
   else
     Proc_Radar_Data();
-  //send initial data to radar
-  Send_Triggle_Signal();
+
   return true;
   //usleep(50000);
 }
 
 bool FrontalDelphiRadar::Send_Triggle_Signal(){
+  int static count = 0;
+  ++count;
+  if(count == 20)//发送20次触发信号
+  {
+    return true;
+  }
   //1)specify remote address
   sockaddr_in send_addr;
   memset(&send_addr,0,sizeof(send_addr));
@@ -127,7 +141,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    short steer_can = (short)abs(steer_phi);
    unsigned char bfsign = 0; //默认为0即可
    //横摆角速度
-   float yawrate_phi = self_vehicle_info_.yaw_rate+0.2f; //0.2用来调整偏差，根据实际情况设定
+   float yawrate_phi = self_vehicle_info_.yaw_rate; //0.2用来调整偏差，根据实际情况设定
    if(yawrate_phi<-128)
    {
      yawrate_phi = -128;
@@ -136,7 +150,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    {
      yawrate_phi = 127;
    }
-   short yawrate_can = (short)(yawrate_phi/0.0625f);
+   short yawrate_can = (short)(yawrate_phi/0.0625f+0.5f);
    //转弯半径
    int radius;
    if(abs(yawrate_phi/180.0f*PI)<1.0f/8191)
@@ -156,7 +170,6 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    unsigned char tmpCanID4=0b11110000; //F0
    unsigned char send_buf_4F0[13];
    memset(send_buf_4F0,0,sizeof(send_buf_4F0));
-
    send_buf_4F0[0]=FI;
    send_buf_4F0[1]=tmpCanID1;
    send_buf_4F0[2]=tmpCanID2;
@@ -165,10 +178,11 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    send_buf_4F0[5]=(speed_can>>3); //车速, m/s
    send_buf_4F0[6]=(((speed_can&0x07)<<5)|((yawrate_can>>8)&0x0F)|(bfsign<<4));//横摆角速度，行驶方向
    send_buf_4F0[7]=((yawrate_can)&0xFF);//横摆角速度
-   send_buf_4F0[8]=(0x80|(radius>>8));//横摆角速度有效位,转弯半径
+   send_buf_4F0[8]=(0x80|(0<<6)|(radius>>8));//横摆角速度有效位,转弯半径
    send_buf_4F0[9]=(radius&0xFF);//转弯半径
-   send_buf_4F0[10]=(0x80|(steersign<<6)|(steer_can>>5));//方向盘转角方向，方向盘转角
+   send_buf_4F0[10]=(0x80|(steersign<<6)|(steer_can>>5));//方向盘转角有效位，方向盘转角方向，方向盘转角
    send_buf_4F0[11]=((steer_can&0x1F)<<3);
+   //发送
    int send_len = sendto(radar_socket_,send_buf_4F0,sizeof(send_buf_4F0),0,(sockaddr*)&remaddr_,sizeof(remaddr_));
    if(send_len<0){
      perror("[ERROR]cannot send send_buf_4F0 data!");
@@ -186,6 +200,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    send_buf_4F1[10]= 0;//横向安装偏差为0,
    send_buf_4F1[11]=(1<<7)|(1<<6)|63;//雷达辐射命令位置1，阻塞关闭位置1，最大跟踪目标数64
    send_buf_4F1[12] =(1<<5);//速度有效位置
+   //发送
    send_len = sendto(radar_socket_,send_buf_4F1,sizeof(send_buf_4F1),0,(sockaddr*)&remaddr_,sizeof(remaddr_));
    if(send_len<0){
      perror("[ERROR]cannot send send_buf_4F1 data!");
@@ -197,6 +212,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    send_buf_5F2[7] = (10>>1);//长距离模式的角度为10度
    send_buf_5F2[8] = ((10&0x01)<<7)|45;//短距离模式的角度是45度
    send_buf_5F2[9] = 65; //雷达的安装高度为45cm
+   //发送
    send_len = sendto(radar_socket_,send_buf_5F2,sizeof(send_buf_5F2),0,(sockaddr*)&remaddr_,sizeof(remaddr_));
    if(send_len<0){
      perror("[ERROR]cannot send send_buf_5F2 data!");

@@ -12,6 +12,9 @@
 //Project headers
 #include "frontal_delphi_radar.h"
 #include "object_detection_radar.h"
+#include "frontal_delphi_radar/RadarPoint.h"
+#include "frontal_delphi_radar/RadarData.h"
+
 using namespace std;
 
 //subscribe ROS messages and implement the detph image conversion
@@ -39,7 +42,7 @@ public:
     subECUData_ = nodehandle_.subscribe<sensor_driver_msgs::ECUData>("ecudata", 1, boost::bind(&PostProcess::ECUDataHandler,this,_1));//
     subImuData_ = nodehandle_.subscribe<sensor_msgs::Imu>("imudata", 1, boost::bind(&PostProcess::ImuDataHandler,this,_1));//
     processthread_ = new boost::thread(boost::bind(&PostProcess::process,this));
-    visualize_thread_ = new boost::thread(boost::bind(&PostProcess::visualize,this));
+    //visualize_thread_ = new boost::thread(boost::bind(&PostProcess::visualize,this));
   }
 
 
@@ -70,21 +73,9 @@ public:
     }
     while(!processthreadfinished_)
     {
-      //cout<<"++++++++++"<<endl;
       frontal_delphi_receiver_.set_self_vehicle_info(vehicle_info_received_);
       frontal_delphi_receiver_.Update();
       usleep(100);
-      //data visualizition
-//      delphi_radar_target radar_data=frontal_delphi_receiver_.radar_target_data();
-//      object_detection_.get_radar_Data(radar_data);
-//      object_detection_.main_function2();
-//      IplImage* delphi_image = object_detection_.m_Delphi_img;
-//      cvNamedWindow("delphi_image",CV_WINDOW_NORMAL);
-//      cvShowImage("delphi_image", delphi_image);
-//
-//      int key = cvWaitKey(10);
-//      if(key == 32)
-//        cvWaitKey(0);
     }
 
   }
@@ -123,7 +114,7 @@ private:
 };
 
 int main(int argc, char** argv){
-  ros::init(argc, argv, "frontal_delphi_radar");
+  ros::init(argc, argv, "get_radar_data");
   ros::NodeHandle nh;
 
   PostProcess postprocess(nh);

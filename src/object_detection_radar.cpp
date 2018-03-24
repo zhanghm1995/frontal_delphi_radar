@@ -336,8 +336,8 @@ void ObjectDetection::show_result(vector<moving_object_millimeter>& valid_obj)//
 
         //附带显示其他属性信息
         //目标序号,status，range,v
-        sprintf(text,"%d",
-            (*it).target_ID);
+        sprintf(text,"%d %.3f",
+            (*it).target_ID,(*it).v);
         cvPutText(m_Delphi_img,text,cvPoint(delphi_pos.x+2,delphi_pos.y),&cf,cvScalar(0,255,255));
     }
     /*cvShowImage("test1",m_Delphi_img);

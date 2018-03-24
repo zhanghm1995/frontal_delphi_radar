@@ -25,7 +25,7 @@ set(PACKAGE_DEPENDENCIES
 ##############################
 ###### find packages #########
 ##############################
-find_package(catkin REQUIRED COMPONENTS ${PACKAGE_DEPENDENCIES})
+find_package(catkin REQUIRED COMPONENTS ${PACKAGE_DEPENDENCIES} message_generation)
 find_package(ivcommon REQUIRED)
 find_package(sensor_driver REQUIRED)
 set(BUILD_SHARED_LIBS OFF)
@@ -39,6 +39,12 @@ find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system iostreams filesystem regex program_options)
+
+##############################
+#### message generation ######
+##############################
+add_message_files(FILES RadarPoint.msg RadarData.msg)
+generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
   CATKIN_DEPENDS ${PACKAGE_DEPENDENCIES} message_runtime

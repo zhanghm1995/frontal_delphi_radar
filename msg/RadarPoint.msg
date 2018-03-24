@@ -1,0 +1,11 @@
+uint8 target_ID
+float32 range
+float32 v
+float32 angle
+float32 x
+float32 y
+bool valid
+uint8 status
+uint8 moving
+bool moving_fast
+bool moving_slow
