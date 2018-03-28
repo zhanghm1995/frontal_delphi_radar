@@ -1,3 +1,10 @@
+//======================================================================
+// Author   : Haiming Zhang
+// Email    : zhanghm_1995@qq.com
+// Version  :
+// Copyright    :
+// Descriptoin  :
+//======================================================================
 #include <iostream>
 //ROS
 #include <ros/ros.h>
