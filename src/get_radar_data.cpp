@@ -90,7 +90,7 @@ public:
     while(!processthreadfinished_){
       //data publish
       delphi_radar_target radar_data=frontal_delphi_receiver_.radar_target_data();
-      frontal_delphi_radar::RadarData radar_data_msg;
+      frontal_delphi_radar::RadarData radar_data_msg;//final send message
       frontal_delphi_radar::RadarPoint radar_point_msg;
       for(int i=0;i<64;++i)
       {
@@ -107,6 +107,7 @@ public:
         radar_point_msg.moving_slow = radar_data.delphi_detection_array[i].moving_slow;
         radar_data_msg.delphi_detection_array[i]=radar_point_msg;
       }
+      radar_data_msg.header.stamp = ros::Time::now();
       radar_data_msg.ACC_Target_ID = radar_data.ACC_Target_ID;
       pubRadarData_.publish(radar_data_msg);
     }
