@@ -11,13 +11,13 @@
 #include <std_msgs/Float32.h>
 
 //project headers
-#include "frontal_delphi_radar/src/AnalysisECU.h"
+#include "AnalysisECU.h"
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "get_ECU_Data"); //node name
   ros::NodeHandle nh;
-  ros::Publisher pubECUdata; //发布左相机图像
+  ros::Publisher pubECUdata;
   pubECUdata = nh.advertise<std_msgs::Float32>("huachen_ecu_data",1);
   ros::Rate rate(10); //发布频率
 
@@ -34,7 +34,8 @@ int main(int argc, char** argv)
   {
 
     m_AnalysisECU.Update();
-    std_msgs::Float32 ecu_msg = m_AnalysisECU.ECUData_struct.fForwardVel;
+    std_msgs::Float32 ecu_msg;
+    ecu_msg.data = m_AnalysisECU.ECUData_struct.fForwardVel;
     pubECUdata.publish(ecu_msg);
     rate.sleep();
   }

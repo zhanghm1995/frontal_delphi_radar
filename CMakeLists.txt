@@ -70,6 +70,9 @@ target_link_libraries(frontal_delphi_radar PUBLIC ${catkin_LIBRARIES}  ${ivcommo
 										utils ivsensor glog gflags )
 add_executable(get_radar_data src/get_radar_data.cpp src/frontal_delphi_radar.cpp)
 target_link_libraries(get_radar_data ${catkin_LIBRARIES}  ${ivcommon_LIBRARIES}  ${Boost_LIBRARIES} ${sensor_driver_LIBRARIES})
+
+add_executable(get_ECU src/getECU.cpp src/AnalysisECU.cpp)
+target_link_libraries(get_ECU ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 ##############################
 ###### install packages #########
 ##############################
