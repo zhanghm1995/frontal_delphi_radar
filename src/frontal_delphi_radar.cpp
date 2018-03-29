@@ -179,7 +179,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    send_buf_4F0[5]=(speed_can>>3); //车速, m/s
    send_buf_4F0[6]=(((speed_can&0x07)<<5)|((yawrate_can>>8)&0x0F)|(bfsign<<4));//横摆角速度，行驶方向
    send_buf_4F0[7]=((yawrate_can)&0xFF);//横摆角速度
-   send_buf_4F0[8]=(0x80|(radius>>8));//横摆角速度有效位,转弯半径
+   send_buf_4F0[8]=(0x00|(radius>>8));//横摆角速度有效位,转弯半径,0x80代表横摆角速度有效，0x00代表无效
    send_buf_4F0[9]=(radius&0xFF);//转弯半径
    send_buf_4F0[10]=(0x00|(steersign<<6)|(steer_can>>5));//方向盘转角有效位，方向盘转角方向，方向盘转角
    send_buf_4F0[11]=((steer_can&0x1F)<<3);
