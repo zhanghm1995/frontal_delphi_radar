@@ -3,12 +3,13 @@
 // Email    : zhanghm_1995@qq.com
 // Version  :
 // Copyright    :
-// Descriptoin  :
+// Descriptoin  : get vehicle and radar data, and publish them in a ROS message
 //======================================================================
 #include <iostream>
 //ROS
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
+#include <std_msgs/Float32.h>
 #include "sensor_driver_msgs/ECUData.h"//ECUData
 //Boost
 #include <boost/algorithm/string.hpp>
@@ -46,7 +47,7 @@ public:
 
   void init()
   {
-    subECUData_ = nodehandle_.subscribe<sensor_driver_msgs::ECUData>("ecudata", 1, boost::bind(&PostProcess::ECUDataHandler,this,_1));//
+    subECUData_ = nodehandle_.subscribe<std_msgs::Float32>("huachen_ecu_data", 1, boost::bind(&PostProcess::ECUDataHandler,this,_1));//
     subImuData_ = nodehandle_.subscribe<sensor_msgs::Imu>("imudata", 1, boost::bind(&PostProcess::ImuDataHandler,this,_1));//
     pubRadarData_ = nodehandle_.advertise<frontal_delphi_radar::RadarData>("radardata",1);
     processthread_ = new boost::thread(boost::bind(&PostProcess::process,this));
@@ -56,9 +57,9 @@ public:
 
 
 
-  void ECUDataHandler(const sensor_driver_msgs::ECUDataConstPtr& ecu_data_msg) //EUC数据
+  void ECUDataHandler(const std_msgs::Float32ConstPtr& ecu_data_msg) //EUC数据
   {
-    vehicle_info_received_.vehicle_speed = ecu_data_msg->fForwardVel;//车速, m/s
+    vehicle_info_received_.vehicle_speed = ecu_data_msg->data;//车速, m/s
 
   }
   void ImuDataHandler(const sensor_msgs::ImuConstPtr& imu_data_msg)
