@@ -87,6 +87,7 @@ public:
 
   }
   void PublishData(){
+    ros::Rate rate(50);
     while(!processthreadfinished_){
       //data publish
       delphi_radar_target radar_data=frontal_delphi_receiver_.radar_target_data();
@@ -110,6 +111,7 @@ public:
       radar_data_msg.header.stamp = ros::Time::now();
       radar_data_msg.ACC_Target_ID = radar_data.ACC_Target_ID;
       pubRadarData_.publish(radar_data_msg);
+      rate.sleep();
     }
   }
 
