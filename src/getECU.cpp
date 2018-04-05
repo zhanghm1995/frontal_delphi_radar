@@ -37,7 +37,8 @@ int main(int argc, char** argv)
     std_msgs::Float32 ecu_msg;
     ecu_msg.data = m_AnalysisECU.ECUData_struct.fForwardVel;
     pubECUdata.publish(ecu_msg);
-    rate.sleep();
+    printf("vehicle speed is %.3f\n",m_AnalysisECU.ECUData_struct.fForwardVel);
+//    rate.sleep();
   }
 }
 

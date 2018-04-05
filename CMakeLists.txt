@@ -76,14 +76,14 @@ target_link_libraries(get_ECU ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 ##############################
 ###### install packages #########
 ##############################
-install(TARGETS frontal_delphi_radar get_radar_data
+install(TARGETS frontal_delphi_radar get_radar_data get_ECU
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(
-  TARGETS frontal_delphi_radar get_radar_data
+  TARGETS frontal_delphi_radar get_radar_data get_ECU
   EXPORT frontal_delphi_radarExport
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

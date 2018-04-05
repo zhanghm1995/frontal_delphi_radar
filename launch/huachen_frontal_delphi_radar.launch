@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+
+  <node pkg="frontal_delphi_radar" type="get_ECU" name="get_ecudata" output="screen">
+  </node>
+
+  <node pkg="frontal_delphi_radar" type="get_radar_data" name="get_radar_data" output="screen">
+  </node>
+
+  <node pkg="frontal_delphi_radar" type="frontal_delphi_radar" name="frontal_delphi_radar" output="screen">
+  </node>
+  
+
+</launch>

@@ -28,6 +28,9 @@ bool  CAnalysisECU::Init(int port)
     myaddr.sin_addr.s_addr =htonl(INADDR_ANY);
 	//myaddr.sin_addr.s_addr =htons("192.168.0.254");
     myaddr.sin_port = htons(port);
+    //enable address reuse
+     int ret,on=1;
+     ret = setsockopt(fd,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
 
     if(bind(fd, (sockaddr *)&myaddr, sizeof(myaddr)) < 0)
     {

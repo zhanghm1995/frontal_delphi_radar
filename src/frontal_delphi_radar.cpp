@@ -48,7 +48,7 @@ bool FrontalDelphiRadar::Init(){
   myaddr_.sin_port = htons(FRONTAL_RADAR_LISTEN_PORT);
   myaddr_.sin_addr.s_addr = htonl(INADDR_ANY);
   //enable address reuse
-  int ret,on;
+  int ret,on=1;
   ret = setsockopt(radar_socket_,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
 
   //3)bind socket to specific address
