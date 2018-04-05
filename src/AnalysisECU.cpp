@@ -50,13 +50,23 @@ void CAnalysisECU::Update()
 {
 	//  printf("waiting on port %d\n", ECU_IN_PORT);
 	recvlen = recvfrom(fd, buf, BUFSIZE,0, (struct sockaddr *)&remaddr, &addrlen);
+    if(recvlen>0)   ECU_DataProcFromVehicle(buf);
+    recvlen = recvfrom(fd, buf, BUFSIZE,MSG_DONTWAIT, (struct sockaddr *)&remaddr, &addrlen);//20180115
+    if(recvlen>0)   ECU_DataProcFromVehicle(buf);
+    recvlen = recvfrom(fd, buf, BUFSIZE,MSG_DONTWAIT, (struct sockaddr *)&remaddr, &addrlen);//20180115
+    if(recvlen>0)   ECU_DataProcFromVehicle(buf);
+    recvlen = recvfrom(fd, buf, BUFSIZE,MSG_DONTWAIT, (struct sockaddr *)&remaddr, &addrlen);//20180115
+    if(recvlen>0)   ECU_DataProcFromVehicle(buf);
+    recvlen = recvfrom(fd, buf, BUFSIZE,MSG_DONTWAIT, (struct sockaddr *)&remaddr, &addrlen);//20180115
+    if(recvlen>0)   ECU_DataProcFromVehicle(buf);
+    recvlen = recvfrom(fd, buf, BUFSIZE,MSG_DONTWAIT, (struct sockaddr *)&remaddr, &addrlen);//20180115
+
 	if(recvlen <= 0)
 		perror("Error: ");
 	else
 		//printf(">>>>>%d\n",recvlen);  
 		ECU_DataProcFromVehicle(buf);    //q1：recvfrom()返回读入的字节数，字节数大于0就启动ECU_DataProcFromVehicle，合适吗？
 
-	//  printf("received navigation ECU %d bytes\n", recvlen)
 
 }
 
@@ -136,7 +146,7 @@ void CAnalysisECU::ECU_DataProcFromVehicle(unsigned char* data)
 					BrakePedal = 1;
 
 				ECUData_struct.fFLRWheelAverAngle = convert_ctrlvalue2steeringangle( tmp , 0 , steeringratio_l, steeringratio_r);	  //左负右正
-				printf("steeringratio_l=%f\n",steeringratio_l);
+				//printf("steeringratio_l=%f\n",steeringratio_l);
 				
 
 				double PH=( data[32]+(data[33]&0x1f)*256 )*0.05625 ; 
