@@ -212,7 +212,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    send_buf_5F2[0] = 0b00001000;
    send_buf_5F2[7] = (10>>1);//长距离模式的角度为10度
    send_buf_5F2[8] = ((10&0x01)<<7)|45;//短距离模式的角度是45度
-   send_buf_5F2[9] = 65; //雷达的安装高度为45cm
+   send_buf_5F2[9] = 45; //雷达的安装高度为45cm
    //发送
    send_len = sendto(radar_socket_,send_buf_5F2,sizeof(send_buf_5F2),0,(sockaddr*)&remaddr_,sizeof(remaddr_));
    if(send_len<0){
