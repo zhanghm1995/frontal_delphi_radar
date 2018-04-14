@@ -32,6 +32,7 @@ set(BUILD_SHARED_LIBS OFF)
 include("${IVCOMMON_CMAKE_DIR}/functions.cmake")
 google_initialize_ivcommon_project()
 
+
 include(FindPkgConfig) #zhanghm: what mean?
 find_package(LuaGoogle REQUIRED)
 find_package(PCL REQUIRED)
@@ -76,6 +77,8 @@ target_link_libraries(get_ECU ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 ##############################
 ###### install packages #########
 ##############################
+install(DIRECTORY launch DESTINATION share/frontal_delphi_radar/)
+
 install(TARGETS frontal_delphi_radar get_radar_data get_ECU
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
