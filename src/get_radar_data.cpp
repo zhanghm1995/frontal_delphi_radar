@@ -47,7 +47,7 @@ public:
 
   void init()
   {
-    subECUData_ = nodehandle_.subscribe<std_msgs::Float32>("huachen_ecu_data", 1, boost::bind(&PostProcess::ECUDataHandler,this,_1));//
+    subECUData_ = nodehandle_.subscribe<std_msgs::Float32>("ecu_data", 1, boost::bind(&PostProcess::ECUDataHandler,this,_1));//
     subImuData_ = nodehandle_.subscribe<sensor_msgs::Imu>("imudata", 1, boost::bind(&PostProcess::ImuDataHandler,this,_1));//
     pubRadarData_ = nodehandle_.advertise<frontal_delphi_radar::RadarData>("radardata",1);
     processthread_ = new boost::thread(boost::bind(&PostProcess::process,this));

@@ -91,7 +91,7 @@ void CAnalysisECU::ECU_DataProcFromVehicle(unsigned char* data)
 	switch(vehicle_name_)
 	{
 	//receive ECU data from HUACHEN
-	case HUACHEN:
+	case CAnalysisECU::HUACHEN:
 	{
 		//printf("%02X",data[0]);
 		//printf("%02X",data[1]);
@@ -180,7 +180,7 @@ void CAnalysisECU::ECU_DataProcFromVehicle(unsigned char* data)
 	} //end VehicleName::HUACHEN
 
 	//receive ECU data from BYD Tang
-	case BYD_TANG:
+	case CAnalysisECU::BYD_TANG:
 	{
 		if(recvlen == 50)
 		{

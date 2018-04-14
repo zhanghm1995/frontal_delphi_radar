@@ -64,7 +64,7 @@ bool FrontalDelphiRadar::Init(){
 
 bool FrontalDelphiRadar::Update(){
   //send initial data to radar
-  //Send_Triggle_Signal();
+  Send_Triggle_Signal();
   //Send vehicle info
   Send_Vehicle_Info();
   //receive radar socket data
