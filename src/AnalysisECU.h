@@ -9,7 +9,7 @@
 #include <fstream>
 #include <unistd.h>
 #include  <iostream>
-#define HUACHEN
+
 #define BUFSIZE 4096
 
 struct struct_ECU			// 车辆状态
@@ -100,31 +100,34 @@ struct struct_ECU			// 车辆状态
 
 class CAnalysisECU
 {
-   public:
-   struct_ECU   ECUData_struct;
-    CAnalysisECU(); 
-    ~CAnalysisECU(); 
-    bool Init(int port);
-    void Update();
-    double steeringratio_l;//qjy,0829
-    double steeringratio_r;
-  private:
-    char m_ECUDataFromReceiver[60];
-    void ECU_DataProcFromVehicle(unsigned char* data);
-    double convert_ctrlvalue2steeringangle(int ctrlvalue , bool direction, double steeringratio_l, double steeringratio_r);
+public:
+	enum VehicleName{BYD_TANG,HUACHEN};
+	struct_ECU   ECUData_struct;
+	CAnalysisECU();
+	~CAnalysisECU();
+	//specify the car name and the listen port
+	bool Init(VehicleName car_type,int port);
+	void Update();
+	double steeringratio_l;//qjy,0829
+	double steeringratio_r;
+private:
+	VehicleName vehicle_name_;
+	char m_ECUDataFromReceiver[60];
+	void ECU_DataProcFromVehicle(unsigned char* data);
+	double convert_ctrlvalue2steeringangle(int ctrlvalue , bool direction, double steeringratio_l, double steeringratio_r);
 
-    sockaddr_in myaddr; /* our address */
-    sockaddr_in remaddr; /* remote address */
-    socklen_t addrlen; /* length of addresses */
+	sockaddr_in myaddr; /* our address */
+	sockaddr_in remaddr; /* remote address */
+	socklen_t addrlen; /* length of addresses */
 
-    int recvlen; /* # bytes received */
-    int fd; /* our socket */
-    unsigned char buf[BUFSIZE]; /* receive buffer */
-        double petral_pressure;
+	int recvlen; /* # bytes received */
+	int fd; /* our socket */
+	unsigned char buf[BUFSIZE]; /* receive buffer */
+	double petral_pressure;
 
-    //霍钊添加
-      int CANFound;
+	//霍钊添加
+	int CANFound;
 
 
-//    std::fstream data_backup;
+	//    std::fstream data_backup;
 };

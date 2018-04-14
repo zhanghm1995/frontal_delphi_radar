@@ -13,18 +13,33 @@
 //project headers
 #include "AnalysisECU.h"
 
+std::string vehicle_name;//车辆类型
+int listen_port; //ECU监听端口
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "get_ECU_Data"); //node name
   ros::NodeHandle nh;
   ros::Publisher pubECUdata;
-  pubECUdata = nh.advertise<std_msgs::Float32>("huachen_ecu_data",1);
+  pubECUdata = nh.advertise<std_msgs::Float32>("ecu_data",1);
   ros::Rate rate(10); //发布频率
 
   //get Nport data and analysis them
   CAnalysisECU m_AnalysisECU;
-  int listen_port = 9002;
-  if(!m_AnalysisECU.Init(listen_port))
+
+  //get parameters
+  nh.param<std::string>("vehicle_name",vehicle_name,"BYD_TANG");
+  nh.param<int>("listen_port",listen_port,9002);
+
+  bool conect_flag = false;
+  if(vehicle_name == "BYD_TANG")
+  {
+	  conect_flag=m_AnalysisECU.Init(CAnalysisECU::BYD_TANG,listen_port);
+  }
+  else if(vehicle_name == "HUACHEN")
+  {
+	  conect_flag=m_AnalysisECU.Init(CAnalysisECU::HUACHEN,listen_port);
+  }
+  if(!conect_flag)
   {
     printf("[ERROR] Cannot build connection to ECU!\n");
     return -1;
