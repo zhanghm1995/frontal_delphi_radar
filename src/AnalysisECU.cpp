@@ -49,6 +49,7 @@ bool  CAnalysisECU::Init(VehicleName car_type,int port)
 
 void CAnalysisECU::Update()
 {
+	printf("enter in Update\n");
 	//  printf("waiting on port %d\n", ECU_IN_PORT);
 	recvlen = recvfrom(fd, buf, BUFSIZE,0, (struct sockaddr *)&remaddr, &addrlen);
 	if(recvlen>0)   ECU_DataProcFromVehicle(buf);
@@ -88,6 +89,7 @@ double CAnalysisECU::convert_ctrlvalue2steeringangle(int ctrlvalue, bool directi
 
 void CAnalysisECU::ECU_DataProcFromVehicle(unsigned char* data)
 {
+	printf("enter in Update\n");
 	switch(vehicle_name_)
 	{
 	//receive ECU data from HUACHEN
@@ -182,6 +184,7 @@ void CAnalysisECU::ECU_DataProcFromVehicle(unsigned char* data)
 	//receive ECU data from BYD Tang
 	case CAnalysisECU::BYD_TANG:
 	{
+		printf("recvlen is %d",recvlen);
 		if(recvlen == 50)
 		{
 			unsigned char static_ucECURXDataChecksum = 0;

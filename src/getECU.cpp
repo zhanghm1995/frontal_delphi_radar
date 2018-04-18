@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
   //get parameters
   nh.param<std::string>("vehicle_name",vehicle_name,"BYD_TANG");
-  nh.param<int>("listen_port",listen_port,9002);
+  nh.param<int>("listen_port",listen_port,9001);
 
   bool conect_flag = false;
   if(vehicle_name == "BYD_TANG")
@@ -44,10 +44,10 @@ int main(int argc, char** argv)
     printf("[ERROR] Cannot build connection to ECU!\n");
     return -1;
   }
+  ROS_INFO("Connection to ECU");
 
   while(ros::ok())
   {
-
     m_AnalysisECU.Update();
     std_msgs::Float32 ecu_msg;
     ecu_msg.data = m_AnalysisECU.ECUData_struct.fForwardVel;
