@@ -238,6 +238,27 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
     /*******************************/
     /*parsing the radar data we want*/
     /*******************************/
+    //get the vehicle info from ESR to validate we have send vehicle info to ESR indeed
+    if(tmpCanID == 0x4E0){
+    	//CAN_TX_YAW_RATE_CALC
+    	unsigned short temp_A1 = tmpdata[5];
+    	unsigned short temp_A2 = tmpdata[6]&0x00F0;
+    	unsigned short temp_A = temp_A1&0x0080;
+    	if(temp_A == 0){
+    		radar_target_data_.yaw_rate = ((temp_A1<<4)|(temp_A2))*0.0625f;
+    	}
+    	if(temp_A == 0x0080){
+    		unsigned short temp_a0 = ((temp_A1<<4)|temp_A2);
+    		unsigned short temp_a1 = ~temp_a1;
+    		unsigned short temp_a2 = (temp_a1&0x07FF)+1;
+    		radar_target_data_.yaw_rate = -(temp_a2*0.0625f);
+    	}
+
+    	//CAN_TX_Vehicle_Speed_CALC
+    	temp_A1 = tmpdata[6]&0x0007;
+    	temp_A2 = tmpdata[7];
+    	radar_target_data_.vehicle_speed = ((temp_A1<<8)|(temp_A2))*0.0625f;
+    }
     //get the most dangerous target ID
     unsigned short TrackID_1 = 0,TrackID_2 = 0;
     if(tmpCanID == 0x4E3){
@@ -280,8 +301,12 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
       if (temp_V==0x0020)
       {
         unsigned short temp_0=((temp_V1&0x003F) <<8)|temp_V2;
+#if 0
         unsigned short temp_1=temp_0 - 1;
         unsigned short temp_2=(~temp_1) & 0x1FFF;
+#endif
+        unsigned short temp_1=~temp_0;
+        unsigned short temp_2=(temp_1 & 0x1FFF)+1;
         radar_target_data_.delphi_detection_array[m].v=-(temp_2*0.01f);//Unit: m/s
       }
       printf("range rate is %f \n",radar_target_data_.delphi_detection_array[m].v);
@@ -297,8 +322,8 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
       if(temp_A3==0x0010)
       {
         unsigned short temp_3=((temp_A1&0x000F)<<5)|((temp_A2&0x00F8)>>3);
-        unsigned short temp_4=temp_3 - 1;
-        unsigned short temp_5=(~temp_4) & 0x01FF;
+        unsigned short temp_4=~temp_3;
+        unsigned short temp_5=(temp_4& 0x01FF)+1;
         radar_target_data_.delphi_detection_array[m].angle=-temp_5*0.1f;
       }
       printf("angle is %f \n",radar_target_data_.delphi_detection_array[m].angle);
