@@ -27,8 +27,8 @@ int main(int argc, char** argv)
   CAnalysisECU m_AnalysisECU;
 
   //get parameters
-  nh.param<std::string>("vehicle_name",vehicle_name,"BYD_TANG");
-  nh.param<int>("listen_port",listen_port,9001);
+  ros::param::get("~vehicle_name",vehicle_name);
+  ros::param::get("~listen_port",listen_port);
 
   bool conect_flag = false;
   if(vehicle_name == "BYD_TANG")
