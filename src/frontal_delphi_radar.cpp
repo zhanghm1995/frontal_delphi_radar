@@ -133,6 +133,7 @@ bool FrontalDelphiRadar::Send_Triggle_Signal(){
 }
 
 bool FrontalDelphiRadar::Send_Vehicle_Info(){
+	printf("[INFO] send vehicle info to radar...\n");
   //vehicle info value assignment
    //车速
    int speed_can = (int)(self_vehicle_info_.vehicle_speed/0.0625f+0.5f);
@@ -265,8 +266,8 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
     	temp_A2 = tmpdata[7];
     	radar_target_data_.vehicle_speed = ((temp_A1<<8)|(temp_A2))*0.0625f;
 
-    	printf("yaw_rate from ESR is ++++++++++++++++++++++++%f \n",radar_target_data_.yaw_rate);
-    	printf("vehicle_speed from ESR is ++++++++++++++++++++++++%f \n",radar_target_data_.vehicle_speed);
+    	printf("yaw_rate from ESR is ++++++++++++++++++++++++++++++++++++++++++%f \n",radar_target_data_.yaw_rate);
+    	printf("vehicle_speed from ESR is ++++++++++++++++++++++++++++++++++%f \n",radar_target_data_.vehicle_speed);
     }
     //get the most dangerous target ID
     unsigned short TrackID_1 = 0,TrackID_2 = 0;
