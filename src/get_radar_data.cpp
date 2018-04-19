@@ -109,6 +109,10 @@ public:
         radar_point_msg.moving_slow = radar_data.delphi_detection_array[i].moving_slow;
         radar_data_msg.delphi_detection_array[i]=radar_point_msg;
       }
+      radar_data_msg.ESR_vehicle_speed = radar_data.ESR_vehicle_speed;
+      radar_data_msg.ESR_yaw_rate = radar_data.ESR_yaw_rate;
+      radar_data_msg.vehicle_speed_origin = radar_data.vehicle_speed_origin;
+      radar_data_msg.yaw_rate_origin = radar_data.yaw_rate_origin;
       radar_data_msg.header.stamp = ros::Time::now();
       radar_data_msg.ACC_Target_ID = radar_data.ACC_Target_ID;
       pubRadarData_.publish(radar_data_msg);

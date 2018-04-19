@@ -139,6 +139,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    int speed_can = (int)(self_vehicle_info_.vehicle_speed/0.0625f+0.5f);
    unsigned char bfsign = 0; //车速方向，0——向前，1——向后
    if(self_vehicle_info_.vehicle_speed<0) bfsign = 1;
+   radar_target_data_.vehicle_speed_origin = self_vehicle_info_.vehicle_speed;
    //方向盘转角
    float steer_phi = self_vehicle_info_.steering_angle;
    unsigned char steersign = steer_phi>0?1:0;
@@ -155,6 +156,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    {
      yawrate_phi = 127;
    }
+   radar_target_data_.yaw_rate_origin =  self_vehicle_info_.yaw_rate;
    short yawrate_can = (short)(yawrate_phi/0.0625f+0.5f);
    //转弯半径
    int radius;
@@ -252,22 +254,22 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
     	unsigned short temp_A2 = tmpdata[6]&0x00F0;
     	unsigned short temp_A = temp_A1&0x0080;
     	if(temp_A == 0){
-    		radar_target_data_.yaw_rate = ((temp_A1<<4)|(temp_A2))*0.0625f;
+    		radar_target_data_.ESR_yaw_rate = ((temp_A1<<4)|(temp_A2))*0.0625f;
     	}
     	if(temp_A == 0x0080){
     		unsigned short temp_a0 = ((temp_A1<<4)|temp_A2);
     		unsigned short temp_a1 = ~temp_a1;
     		unsigned short temp_a2 = (temp_a1&0x07FF)+1;
-    		radar_target_data_.yaw_rate = -(temp_a2*0.0625f);
+    		radar_target_data_.ESR_yaw_rate = -(temp_a2*0.0625f);
     	}
 
     	//CAN_TX_Vehicle_Speed_CALC
     	temp_A1 = tmpdata[6]&0x0007;
     	temp_A2 = tmpdata[7];
-    	radar_target_data_.vehicle_speed = ((temp_A1<<8)|(temp_A2))*0.0625f;
+    	radar_target_data_.ESR_vehicle_speed = ((temp_A1<<8)|(temp_A2))*0.0625f;
 
-    	printf("yaw_rate from ESR is ++++++++++++++++++++++++++++++++++++++++++%f \n",radar_target_data_.yaw_rate);
-    	printf("vehicle_speed from ESR is ++++++++++++++++++++++++++++++++++%f \n",radar_target_data_.vehicle_speed);
+    	printf("yaw_rate from ESR is ++++++++++++++++++++++++++++++++++++++++++%f \n",radar_target_data_.ESR_yaw_rate);
+    	printf("vehicle_speed from ESR is ++++++++++++++++++++++++++++++++++%f \n",radar_target_data_.ESR_vehicle_speed);
     }
     //get the most dangerous target ID
     unsigned short TrackID_1 = 0,TrackID_2 = 0;

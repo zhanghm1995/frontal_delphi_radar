@@ -19,8 +19,10 @@ typedef struct _moving_object_millimeter{
 typedef struct _delphi_radar_target{
 	moving_object_millimeter delphi_detection_array[64]; //64个目标数据
 	unsigned short ACC_Target_ID;//ACC目标的ID号,0-64,0意味着没有ACC目标
-	float vehicle_speed;//从毫米波雷达获取的车速  m/s
-	float yaw_rate; //从毫米波雷达获取的横摆角速度 degree/s
+	float ESR_vehicle_speed;//从毫米波雷达获取的车速  m/s
+	float ESR_yaw_rate; //从毫米波雷达获取的横摆角速度 degree/s
+	float vehicle_speed_origin;//原始车辆速度
+	float yaw_rate_origin;//原始车辆横摆角速度
 }delphi_radar_target;
 
 
