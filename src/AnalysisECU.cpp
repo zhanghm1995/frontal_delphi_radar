@@ -184,7 +184,7 @@ void CAnalysisECU::ECU_DataProcFromVehicle(unsigned char* data)
 	//receive ECU data from BYD Tang
 	case CAnalysisECU::BYD_TANG:
 	{
-		printf("recvlen is %d",recvlen);
+		printf("recvlen is %d\n",recvlen);
 		if(recvlen == 50)
 		{
 			unsigned char static_ucECURXDataChecksum = 0;

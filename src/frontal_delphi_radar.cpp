@@ -64,7 +64,7 @@ bool FrontalDelphiRadar::Init(){
 
 bool FrontalDelphiRadar::Update(){
   //send initial data to radar
-  Send_Triggle_Signal();
+  //Send_Triggle_Signal();
   //Send vehicle info
   Send_Vehicle_Info();
   //receive radar socket data
@@ -136,11 +136,14 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
   //vehicle info value assignment
    //车速
    int speed_can = (int)(self_vehicle_info_.vehicle_speed/0.0625f+0.5f);
+   unsigned char bfsign = 0; //车速方向，0——向前，1——向后
+   if(self_vehicle_info_.vehicle_speed<0) bfsign = 1;
    //方向盘转角
    float steer_phi = self_vehicle_info_.steering_angle;
    unsigned char steersign = steer_phi>0?1:0;
    short steer_can = (short)abs(steer_phi);
-   unsigned char bfsign = 0; //默认为0即可
+
+
    //横摆角速度
    float yawrate_phi = self_vehicle_info_.yaw_rate; //0.2用来调整偏差，根据实际情况设定
    if(yawrate_phi<-128)
@@ -162,7 +165,6 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    else{
      radius = (int)(1.0f/(yawrate_phi/180.0f*PI)+0.5f);
    }
-
    //Send info to ID 0x4F0
    unsigned char FI=0b00001000;
    unsigned char tmpCanID1=0b00000000;
@@ -210,6 +212,10 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    unsigned char send_buf_5F2[13];
    memset(send_buf_5F2,0,sizeof(send_buf_5F2));
    send_buf_5F2[0] = 0b00001000;
+   send_buf_5F2[1]=0x00;
+   send_buf_5F2[2]=0x00;
+   send_buf_5F2[3]=0x05;
+   send_buf_5F2[4]=0xF2;
    send_buf_5F2[7] = (10>>1);//长距离模式的角度为10度
    send_buf_5F2[8] = ((10&0x01)<<7)|45;//短距离模式的角度是45度
    send_buf_5F2[9] = 45; //雷达的安装高度为45cm
@@ -259,8 +265,8 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
     	temp_A2 = tmpdata[7];
     	radar_target_data_.vehicle_speed = ((temp_A1<<8)|(temp_A2))*0.0625f;
 
-    	printf("yaw_rate from ESR is %f \n",radar_target_data_.yaw_rate);
-    	printf("vehicle_speed from ESR is %f \n",radar_target_data_.vehicle_speed);
+    	printf("yaw_rate from ESR is ++++++++++++++++++++++++%f \n",radar_target_data_.yaw_rate);
+    	printf("vehicle_speed from ESR is ++++++++++++++++++++++++%f \n",radar_target_data_.vehicle_speed);
     }
     //get the most dangerous target ID
     unsigned short TrackID_1 = 0,TrackID_2 = 0;
@@ -808,6 +814,9 @@ void FrontalDelphiRadar::set_self_vehicle_info(const double& yaw_rate,const doub
   self_vehicle_info_.steering_angle = steering_angle;
 }
 void FrontalDelphiRadar::set_self_vehicle_info(const Vehicle_Info& vehicle_info){
+	printf("[INFO] ESR has received vehicle info, vehicle speed is %.6f,yaw rate is %.6f\n",
+			vehicle_info.vehicle_speed,
+			vehicle_info.yaw_rate);
   self_vehicle_info_ = vehicle_info;
 }
 

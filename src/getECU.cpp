@@ -21,7 +21,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::Publisher pubECUdata;
   pubECUdata = nh.advertise<std_msgs::Float32>("ecu_data",1);
-  ros::Rate rate(10); //发布频率
+  ros::Rate rate(50); //发布频率
 
   //get Nport data and analysis them
   CAnalysisECU m_AnalysisECU;
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     ecu_msg.data = m_AnalysisECU.ECUData_struct.fForwardVel;
     pubECUdata.publish(ecu_msg);
     printf("vehicle speed is %.3f\n",m_AnalysisECU.ECUData_struct.fForwardVel);
-//    rate.sleep();
+    rate.sleep();
   }
 }
 
