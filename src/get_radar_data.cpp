@@ -47,7 +47,7 @@ public:
 
   void init()
   {
-    subECUData_ = nodehandle_.subscribe<std_msgs::Float32>("ecu_data", 1, boost::bind(&PostProcess::ECUDataHandler,this,_1));//
+    subECUData_ = nodehandle_.subscribe<sensor_driver_msgs::ECUData>("ecudata", 1, boost::bind(&PostProcess::ECUDataHandler,this,_1));//
     subImuData_ = nodehandle_.subscribe<sensor_msgs::Imu>("imudata", 1, boost::bind(&PostProcess::ImuDataHandler,this,_1));//
     pubRadarData_ = nodehandle_.advertise<frontal_delphi_radar::RadarData>("radardata",1);
     processthread_ = new boost::thread(boost::bind(&PostProcess::process,this));
@@ -57,10 +57,10 @@ public:
 
 
 
-  void ECUDataHandler(const std_msgs::Float32ConstPtr& ecu_data_msg) //ECU数据
+  void ECUDataHandler(const sensor_driver_msgs::ECUDataConstPtr& ecu_data_msg) //ECU数据
   {
     ROS_INFO("<get_radar_data> ECUData callback...");//indicate receive ECU data
-    vehicle_info_received_.vehicle_speed = ecu_data_msg->data;//车速, m/s
+    vehicle_info_received_.vehicle_speed = ecu_data_msg->fForwardVel;//车速, m/s
   }
 
   void ImuDataHandler(const sensor_msgs::ImuConstPtr& imu_data_msg)
@@ -90,7 +90,7 @@ public:
 
   }
   void PublishData(){
-	  ros::Rate rate(50);
+	  ros::Rate rate(25);
     while(!processthreadfinished_){
       //data publish
       delphi_radar_target radar_data=frontal_delphi_receiver_.radar_target_data();

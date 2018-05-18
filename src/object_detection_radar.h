@@ -21,7 +21,7 @@
 using std::vector;
 
 #define NUM 64  //毫米波雷达总的检测目标数
-#define METER2PIXEL 5 //1米为5个像素点，根据相机标定参数来定
+#define METER2PIXEL 5 //1米为5个像素点，根据相机标定参数来定,每个像素间隔0.2m，即像素分辨率为20cm。
 #define OBJECT_WIDTH 2 //默认实际车宽为2米
 #define PLANE_WIDTH 401  //鸟瞰图
 #define PLANE_HEIGHT 601
