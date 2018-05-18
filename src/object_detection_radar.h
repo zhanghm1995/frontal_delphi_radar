@@ -48,8 +48,8 @@ public:
 
 public:
   //类数据获取
-  void get_radar_Data(delphi_radar_target& radar,Vehicle_Info& _vehicle_info);//在线获取毫米波数据和车辆信息
-  void get_radar_Data(const delphi_radar_target& radar);//在线获取毫米波数据
+  void set_radar_Data(delphi_radar_target& radar,Vehicle_Info& _vehicle_info);//在线获取毫米波数据和车辆信息
+  void set_radar_data(const delphi_radar_target& radar);//在线获取毫米波数据
 
   void show_result(moving_object_millimeter& obj_interest); //得到最终显示画面
   void show_result(vector<moving_object_millimeter>& valid_obj);//显示全部有效目标

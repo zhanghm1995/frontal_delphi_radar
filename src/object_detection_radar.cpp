@@ -131,7 +131,7 @@ void ObjectDetection::draw_basic_info()
 
 }
 
-void ObjectDetection::get_radar_Data(const delphi_radar_target& radar)
+void ObjectDetection::set_radar_data(const delphi_radar_target& radar)
 {
   m_ACC_ID=radar.ACC_Target_ID;
 #ifdef SAVE_GET_DATA
@@ -178,7 +178,7 @@ void ObjectDetection::get_radar_Data(const delphi_radar_target& radar)
 }
 
 
-void ObjectDetection::get_radar_Data(delphi_radar_target& radar,Vehicle_Info& _vehicle_info)
+void ObjectDetection::set_radar_Data(delphi_radar_target& radar,Vehicle_Info& _vehicle_info)
 {
     m_ACC_ID=radar.ACC_Target_ID;
 
@@ -225,11 +225,6 @@ void ObjectDetection::get_radar_Data(delphi_radar_target& radar,Vehicle_Info& _v
 #ifdef SAVE_GET_DATA
     fprintf(fp_radar_file,"\n");
 #endif
-
-
-
-
-
 }
 
 
@@ -335,9 +330,9 @@ void ObjectDetection::show_result(vector<moving_object_millimeter>& valid_obj)//
         cvCircle(m_Delphi_img,delphi_pos, 1, cvScalar(255,255, 255), 2);
 
         //附带显示其他属性信息
-        //目标序号,status，range,v
-        sprintf(text,"%d %.3f",
-            (*it).target_ID,(*it).v);
+        //目标序号,v, moving
+        sprintf(text,"%d %.3f %d",
+            (*it).target_ID,(*it).v,(*it).moving);
         cvPutText(m_Delphi_img,text,cvPoint(delphi_pos.x+2,delphi_pos.y),&cf,cvScalar(0,255,255));
     }
     /*cvShowImage("test1",m_Delphi_img);

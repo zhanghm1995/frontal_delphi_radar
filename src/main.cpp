@@ -57,16 +57,17 @@ public:
       radar_data_.delphi_detection_array[i].moving_slow = radar_msg->delphi_detection_array[i].moving_slow;
     }
     radar_data_.ACC_Target_ID = radar_msg->ACC_Target_ID;
-
+    radar_data_.ESR_vehicle_speed = radar_msg->ESR_vehicle_speed;//ego vehicle speed
+    radar_data_.ESR_yaw_rate = radar_msg->ESR_yaw_rate; //ego vehicle yaw angle rate
   }
   void process()
   {
 
-    object_detection_.draw_basic_info();
+    object_detection_.draw_basic_info();//绘制网格线
     while(!processthreadfinished_)
     {
       //data visualizition
-      object_detection_.get_radar_Data(radar_data_);
+      object_detection_.set_radar_data(radar_data_);//传递获取的雷达数据
       object_detection_.main_function2();
       IplImage* delphi_image = object_detection_.m_Delphi_img;
       cvNamedWindow("delphi_image",CV_WINDOW_NORMAL);
