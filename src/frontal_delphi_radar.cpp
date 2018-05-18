@@ -133,7 +133,7 @@ bool FrontalDelphiRadar::Send_Triggle_Signal(){
 }
 
 bool FrontalDelphiRadar::Send_Vehicle_Info(){
-	printf("[INFO] send vehicle info to radar...\n");
+	printf("[INFO] <frontal_delphi_radar> send vehicle info to radar...\n");
   //vehicle info value assignment
    //车速
    int speed_can = (int)(self_vehicle_info_.vehicle_speed/0.0625f+0.5f);
@@ -221,7 +221,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    send_buf_5F2[4]=0xF2;
    send_buf_5F2[7] = (10>>1);//长距离模式的角度为10度
    send_buf_5F2[8] = ((10&0x01)<<7)|45;//短距离模式的角度是45度
-   send_buf_5F2[9] = 45; //雷达的安装高度为45cm
+   send_buf_5F2[9] = 55; //雷达的安装高度 cm
    //发送
    send_len = sendto(radar_socket_,send_buf_5F2,sizeof(send_buf_5F2),0,(sockaddr*)&remaddr_,sizeof(remaddr_));
    if(send_len<0){
@@ -538,7 +538,7 @@ void FrontalDelphiRadar::set_self_vehicle_info(const double& yaw_rate,const doub
   self_vehicle_info_.steering_angle = steering_angle;
 }
 void FrontalDelphiRadar::set_self_vehicle_info(const Vehicle_Info& vehicle_info){
-	printf("[INFO] ESR has received vehicle info, vehicle speed is %.6f,yaw rate is %.6f\n",
+	printf("[INFO] <frontal_delphi_radar> ESR has received vehicle info, vehicle speed is %.6f,yaw rate is %.6f\n",
 			vehicle_info.vehicle_speed,
 			vehicle_info.yaw_rate);
   self_vehicle_info_ = vehicle_info;

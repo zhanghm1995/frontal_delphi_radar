@@ -57,13 +57,15 @@ public:
 
 
 
-  void ECUDataHandler(const std_msgs::Float32ConstPtr& ecu_data_msg) //EUC数据
+  void ECUDataHandler(const std_msgs::Float32ConstPtr& ecu_data_msg) //ECU数据
   {
+    ROS_INFO("<get_radar_data> ECUData callback...");//indicate receive ECU data
     vehicle_info_received_.vehicle_speed = ecu_data_msg->data;//车速, m/s
-
   }
+
   void ImuDataHandler(const sensor_msgs::ImuConstPtr& imu_data_msg)
   {
+    ROS_INFO("<get_radar_data> ImuData callback...");//indicate receive Imu data
     //惯导横摆角速度逆时针为正，毫米波雷达要求顺时针为正
     vehicle_info_received_.yaw_rate = (-imu_data_msg->angular_velocity.z)*180.0/3.1415926; //横摆角速度, degree/s
   }
@@ -72,7 +74,7 @@ public:
   {
     bool flag = frontal_delphi_receiver_.Init();//build connection to MMW radar
     if(flag == true){
-      cout<<"[INFO] MMW Radar UDP socket has been built!"<<endl;
+      cout<<"[INFO] <get_radar_data> MMW Radar UDP socket has been built!"<<endl;
     }
     else{
       cout<<"error"<<endl;

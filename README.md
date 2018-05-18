@@ -1,4 +1,18 @@
 # frontal_delphi_radar
+## 毫米波雷达目标属性含义
+对于每一个雷达目标点，有如下属性
+`target_ID`
+`range`
+`v`
+`angle`
+`x`
+`y`
+`x`
+`valid`
+`status`
+`moving`
+`moving_fast`
+`moving_slow`
 
 ## ROS related
 ## Nodes
