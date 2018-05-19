@@ -42,6 +42,8 @@ public:
 
   void RadarDataHandler(const frontal_delphi_radar::RadarDataConstPtr& radar_msg)
   {
+
+//    ROS_INFO("<main> radar data callback...");
     for(int i = 0;i<64;++i)
     {
       radar_data_.delphi_detection_array[i].target_ID = radar_msg->delphi_detection_array[i].target_ID;
@@ -59,6 +61,7 @@ public:
     radar_data_.ACC_Target_ID = radar_msg->ACC_Target_ID;
     radar_data_.ESR_vehicle_speed = radar_msg->ESR_vehicle_speed;//ego vehicle speed
     radar_data_.ESR_yaw_rate = radar_msg->ESR_yaw_rate; //ego vehicle yaw angle rate
+    radar_data_.vehicle_speed_origin = radar_msg->vehicle_speed_origin;
   }
   void process()
   {
@@ -69,13 +72,7 @@ public:
       //data visualizition
       object_detection_.set_radar_data(radar_data_);//传递获取的雷达数据
       object_detection_.main_function2();
-      IplImage* delphi_image = object_detection_.m_Delphi_img;
-      cvNamedWindow("delphi_image",CV_WINDOW_NORMAL);
-      cvShowImage("delphi_image", delphi_image);
-
-      int key = cvWaitKey(10);
-      if(key == 32)
-        cvWaitKey(0);
+      object_detection_.DisplayAll();//显示图像
     }
 
   }

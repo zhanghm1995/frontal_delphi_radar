@@ -1,5 +1,6 @@
 #include "object_detection_radar.h"
-
+#define PI 3.1415926535898
+const double toRAD = PI/180.0;
 
 bool comp_by_y(const moving_object_millimeter &obj1,const moving_object_millimeter &obj2)
 {
@@ -33,10 +34,10 @@ ObjectDetection::ObjectDetection(void)
     //图像成员变量指针内存申请
     m_Delphi_img_bak = cvCreateImage(cvSize(PLANE_WIDTH, PLANE_HEIGHT), IPL_DEPTH_8U, 3);
     m_Delphi_img = cvCreateImage(cvSize(PLANE_WIDTH, PLANE_HEIGHT), IPL_DEPTH_8U, 3);//雷达点鸟瞰图
-    m_Obj_Interest_img = cvCreateImage(cvSize(PLANE_WIDTH, PLANE_HEIGHT), IPL_DEPTH_8U, 3);
+    m_Delphi_img_compare = cvCreateImage(cvSize(PLANE_WIDTH, PLANE_HEIGHT), IPL_DEPTH_8U, 3);
     cvZero(m_Delphi_img_bak);
     cvZero(m_Delphi_img);
-    cvZero(m_Obj_Interest_img);
+    cvZero(m_Delphi_img_compare);
 
     text = new char[260];
     //字体初始化
@@ -133,6 +134,7 @@ void ObjectDetection::set_radar_data(const delphi_radar_target& radar)
 {
   m_ACC_ID=radar.ACC_Target_ID;
   vehicle_info_.vehicle_speed = radar.ESR_vehicle_speed; //从ESR读到的车速
+  vehicle_speed_origin_ = radar.vehicle_speed_origin; //原始ECU车速
 #ifdef SAVE_GET_DATA
     fprintf(fp_radar_file,"%d ",m_ACC_ID);
 #endif
@@ -229,7 +231,7 @@ void ObjectDetection::set_radar_Data(delphi_radar_target& radar,Vehicle_Info& _v
 
 void ObjectDetection::main_function2()
 {
-    cvCopy(m_Delphi_img_bak,m_Delphi_img);//每次都要清除上一次绘制的鸟瞰图
+    DrawCommonElements();
     //筛选雷达点
     for(int i = 0;i<NUM;i++)
     {
@@ -321,18 +323,30 @@ void ObjectDetection::show_result(vector<moving_object_millimeter>& valid_obj)//
     CvPoint delphi_pos;
     for(vector<moving_object_millimeter>::iterator it = valid_obj.begin();it!=valid_obj.end();++it)
     {
+//      printf("<object_delphi_radar> enter in show_result...\n");
         //毫米波检测目标点在鸟瞰图上的坐标
         delphi_pos.x = persMap_Middle + (*it).x*METER2PIXEL;
         delphi_pos.y = (PLANE_HEIGHT - 1) - ((*it).y + RADAR2CAR)*METER2PIXEL;
 
         //鸟瞰图中显示白色点
         cvCircle(m_Delphi_img,delphi_pos, 1, cvScalar(255,255, 255), 2);
+        //显示目标径向绝对速度，验证是否可以判断静态或动态目标
+        float speed_abs = vehicle_info_.vehicle_speed*cos(it->angle*toRAD) + it->v;
+        sprintf(text,"%.3f",speed_abs);
+
         //附带显示其他属性信息
         //目标序号,v, moving
-        sprintf(text,"%d %.3f %d",
-            (*it).target_ID,(*it).v,(*it).moving);
+        sprintf(text,"%d %.3f %d %.3f",
+            (*it).target_ID,(*it).v,(*it).moving,speed_abs);
         cvPutText(m_Delphi_img,text,cvPoint(delphi_pos.x+2,delphi_pos.y),&cf,cvScalar(0,255,255));
 
+        /*************绘制另一幅对比图********************/
+        cvCircle(m_Delphi_img_compare,delphi_pos, 1, cvScalar(255,255, 255), 2);
+        float speed_abs_compare = vehicle_speed_origin_*cos(it->angle*toRAD) + it->v;
+        sprintf(text,"%d %.3f %.3f %d %d",
+                    (*it).target_ID,it->angle,speed_abs_compare,it->moving_slow,it->moving_fast);
+        cvPutText(m_Delphi_img_compare,text,cvPoint(delphi_pos.x+2,delphi_pos.y),&cf,cvScalar(0,255,255));
+        /*************绘制另一幅对比图********************/
     }
 
     /*cvShowImage("test1",m_Delphi_img);
@@ -355,15 +369,35 @@ void ObjectDetection::ShowACCTarget(const int& ACC_ID)
   }
   sprintf(text,"ACC: %d",ACC_ID);
   cvPutText(m_Delphi_img,text,cvPoint(350,15),&cf,cvScalar(0,0,255));//red color
-  //显示其他信息
-  sprintf(text,"ego vehicle speed: %.3f",vehicle_info_.vehicle_speed);//从毫米波雷达获得的车速，与实际车速可能有点不同
-  cvPutText(m_Delphi_img,text,cvPoint(5,15),&cf,cvScalar(0,0,255));
+
 }
 
 moving_object_millimeter ObjectDetection::getSendData()
 {
     final_obj.v = final_obj.v+0.13889;
     return final_obj;
+}
+
+void ObjectDetection::DrawCommonElements()
+{
+  cvCopy(m_Delphi_img_bak,m_Delphi_img);//每次都要清除上一次绘制的鸟瞰图
+
+  //雷达鸟瞰图信息绘制
+  //显示其他信息
+   sprintf(text,"ego vehicle speed: %.3f",vehicle_info_.vehicle_speed);//从毫米波雷达获得的车速，与实际车速可能有点不同
+   cvPutText(m_Delphi_img,text,cvPoint(5,15),&cf,cvScalar(0,0,255));
+   sprintf(text,"ego vehicle speed origin: %.3f",vehicle_speed_origin_);//ECU实际车速
+   cvPutText(m_Delphi_img,text,cvPoint(5,25),&cf,cvScalar(0,0,255));
+   cvCopy(m_Delphi_img,m_Delphi_img_compare);//基本信息复制一份给另一幅图像
+
+}
+void ObjectDetection::DisplayAll()
+{
+  cvNamedWindow("delphi_image",CV_WINDOW_NORMAL);
+  cvShowImage("delphi_image", m_Delphi_img);
+  cvNamedWindow("delphi_image_compare",CV_WINDOW_NORMAL);
+  cvShowImage("delphi_image_compare", m_Delphi_img_compare);
+  cvWaitKey(10);
 }
 
 

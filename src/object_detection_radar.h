@@ -43,6 +43,7 @@ const int T2 = 20;
 
 class ObjectDetection{
 public:
+  //constructors
   ObjectDetection(void);
   ~ObjectDetection(void);
 
@@ -64,6 +65,11 @@ public:
 
   moving_object_millimeter getSendData(); //获得最终需要发送的目标
 
+  /************************/
+  /*Visualiz related*/
+  void DisplayAll(); //控制最终显示
+  void DrawCommonElements();//绘制基本要素，大家共享的信息，如一些标题，文字说明等
+  /*************************/
 private:
   //功能函数
 
@@ -83,12 +89,13 @@ public:
   bool save_flag;
   IplImage* m_Delphi_img_bak; //用于存储绘制好基本要素的雷达图
   IplImage* m_Delphi_img; //雷达点鸟瞰图
-  IplImage* m_Obj_Interest_img; //感兴趣目标雷达鸟瞰图，此处指正前方目标
+  IplImage* m_Delphi_img_compare; //用于调参对比的雷达图
 
   //从雷达获取的信息
   unsigned short m_ACC_ID;
   moving_object_millimeter delphi_detection_array[NUM];//获取的毫米波雷达目标数据
   Vehicle_Info vehicle_info_; //获得的自身车辆信息
+  float vehicle_speed_origin_; //原始车速
   moving_object_millimeter final_obj;
   FILE* fpp;
   //实际处理的雷达和车辆信息数据
