@@ -119,12 +119,10 @@ void ObjectDetection::draw_basic_info()
         cvLine(m_Delphi_img_bak, cvPoint(w, 0), cvPoint(w, 600), cvScalar(122, 122, 122));
     }
 
-    sprintf(text,"Tag: number,status,range,v,moving,moving_fast,moving_slow");
-    //cvPutText(m_Delphi_img_bak,text,cvPoint(1,15),&cf,CV_RGB(255,0,255));
-
-    //cvPutText(m_Delphi_img_bak,"1090",cvPoint(340,15),&cf,CV_RGB(255,0,255));
-
-
+    int vertical_distance_line = 1.5;//绘制左右竖线距离线
+    int pixel_dis = cvRound(vertical_distance_line*METER2PIXEL);
+    cvLine(m_Delphi_img_bak,cvPoint(200-pixel_dis,0),cvPoint(200-pixel_dis,600),CV_RGB(0,0,255));
+    cvLine(m_Delphi_img_bak,cvPoint(200+pixel_dis,0),cvPoint(200+pixel_dis,600),CV_RGB(0,0,255));
 //    cvShowImage("delphi_image", m_Delphi_img_bak);
 //    cvWaitKey(50);
 
@@ -134,6 +132,7 @@ void ObjectDetection::draw_basic_info()
 void ObjectDetection::set_radar_data(const delphi_radar_target& radar)
 {
   m_ACC_ID=radar.ACC_Target_ID;
+  vehicle_info_.vehicle_speed = radar.ESR_vehicle_speed; //从ESR读到的车速
 #ifdef SAVE_GET_DATA
     fprintf(fp_radar_file,"%d ",m_ACC_ID);
 #endif
@@ -234,7 +233,7 @@ void ObjectDetection::main_function2()
     //筛选雷达点
     for(int i = 0;i<NUM;i++)
     {
-        if((delphi_detection_array[i].y>0.5))
+        if((delphi_detection_array[i].range>1.0))//径向距离大于1m才有效
         {
             vecObj_Temp.push_back(delphi_detection_array[i]);
 
@@ -328,13 +327,14 @@ void ObjectDetection::show_result(vector<moving_object_millimeter>& valid_obj)//
 
         //鸟瞰图中显示白色点
         cvCircle(m_Delphi_img,delphi_pos, 1, cvScalar(255,255, 255), 2);
-
         //附带显示其他属性信息
         //目标序号,v, moving
         sprintf(text,"%d %.3f %d",
             (*it).target_ID,(*it).v,(*it).moving);
         cvPutText(m_Delphi_img,text,cvPoint(delphi_pos.x+2,delphi_pos.y),&cf,cvScalar(0,255,255));
+
     }
+
     /*cvShowImage("test1",m_Delphi_img);
     cvWaitKey(0);*/
 
@@ -354,7 +354,10 @@ void ObjectDetection::ShowACCTarget(const int& ACC_ID)
     cvCircle(m_Delphi_img,delphi_pos, 1, cvScalar(0, 0, 255), 6);
   }
   sprintf(text,"ACC: %d",ACC_ID);
-  cvPutText(m_Delphi_img,text,cvPoint(160,15),&cf,cvScalar(0,0,255));//red color
+  cvPutText(m_Delphi_img,text,cvPoint(350,15),&cf,cvScalar(0,0,255));//red color
+  //显示其他信息
+  sprintf(text,"ego vehicle speed: %.3f",vehicle_info_.vehicle_speed);//从毫米波雷达获得的车速，与实际车速可能有点不同
+  cvPutText(m_Delphi_img,text,cvPoint(5,15),&cf,cvScalar(0,0,255));
 }
 
 moving_object_millimeter ObjectDetection::getSendData()

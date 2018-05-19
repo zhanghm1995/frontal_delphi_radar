@@ -85,7 +85,9 @@ public:
   IplImage* m_Delphi_img; //雷达点鸟瞰图
   IplImage* m_Obj_Interest_img; //感兴趣目标雷达鸟瞰图，此处指正前方目标
 
-  moving_object_millimeter delphi_detection_array[NUM];//获取的毫米波雷达数据
+  //从雷达获取的信息
+  unsigned short m_ACC_ID;
+  moving_object_millimeter delphi_detection_array[NUM];//获取的毫米波雷达目标数据
   Vehicle_Info vehicle_info_; //获得的自身车辆信息
   moving_object_millimeter final_obj;
   FILE* fpp;
@@ -103,7 +105,8 @@ public:
   vector<moving_object_millimeter> vecObj_ACC;
   vector<double> vecObj_Distance;
 
-  unsigned short m_ACC_ID;
+
+
 
   int m_frameCount;
   int m_ACC_Count; //判断连续获得ACC目标的帧数
