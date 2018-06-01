@@ -343,8 +343,8 @@ void ObjectDetection::show_result(vector<moving_object_millimeter>& valid_obj)//
         /*************绘制另一幅对比图********************/
         cvCircle(m_Delphi_img_compare,delphi_pos, 1, cvScalar(255,255, 255), 2);
         float speed_abs_compare = vehicle_speed_origin_*cos(it->angle*toRAD) + it->v;
-        sprintf(text,"%d %.3f %.3f %d %d",
-                    (*it).target_ID,it->angle,speed_abs_compare,it->moving_slow,it->moving_fast);
+        sprintf(text,"%d %.3f %.3f %.3f",
+                    (*it).target_ID,it->angle,speed_abs_compare,vehicle_info_.vehicle_speed+it->v);
         cvPutText(m_Delphi_img_compare,text,cvPoint(delphi_pos.x+2,delphi_pos.y),&cf,cvScalar(0,255,255));
         /*************绘制另一幅对比图********************/
     }

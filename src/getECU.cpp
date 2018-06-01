@@ -9,18 +9,19 @@
 //ROS
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
+#include "sensor_driver_msgs/ECUData.h"//ECUData
 
 //project headers
 #include "AnalysisECU.h"
 
-std::string vehicle_name;//车辆类型
-int listen_port; //ECU监听端口
+std::string vehicle_name = "BYD_TANG";//车辆类型
+int listen_port=9001; //ECU监听端口
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "get_ECU_Data"); //node name
   ros::NodeHandle nh;
   ros::Publisher pubECUdata;
-  pubECUdata = nh.advertise<std_msgs::Float32>("ecu_data",1);
+  pubECUdata = nh.advertise<sensor_driver_msgs::ECUData>("ecudata",1);
   ros::Rate rate(50); //发布频率
 
   //get Nport data and analysis them
@@ -49,8 +50,8 @@ int main(int argc, char** argv)
   while(ros::ok())
   {
     m_AnalysisECU.Update();
-    std_msgs::Float32 ecu_msg;
-    ecu_msg.data = m_AnalysisECU.ECUData_struct.fForwardVel;
+    sensor_driver_msgs::ECUData ecu_msg;
+    ecu_msg.fForwardVel = m_AnalysisECU.ECUData_struct.fForwardVel;
     pubECUdata.publish(ecu_msg);
     printf("vehicle speed is %.3f\n",m_AnalysisECU.ECUData_struct.fForwardVel);
     rate.sleep();

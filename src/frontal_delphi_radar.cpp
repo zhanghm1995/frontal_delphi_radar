@@ -4,7 +4,7 @@
 #include <math.h>
 
 #ifdef HUACHEN
-const char* FRONTAL_RADAR_IP = "192.168.0.178";
+const char* FRONTAL_RADAR_IP = "192.168.1.25";
 #endif
 
 #ifdef TOYOTA
@@ -300,7 +300,7 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
       temp_D1 = tmpdata[2];
       temp_D2 = tmpdata[3];
       radar_target_data_.delphi_detection_array[m].range = ((temp_D2)|((temp_D1&0x0007)<<8))*0.1f;
-      printf("range is %f \n",radar_target_data_.delphi_detection_array[m].range);
+//      printf("range is %f \n",radar_target_data_.delphi_detection_array[m].range);
 
       //range_rate  Unit: m/s
       temp_V1 = tmpdata[6];
@@ -317,7 +317,7 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
         unsigned short temp_2=(temp_1 & 0x1FFF)+1;
         radar_target_data_.delphi_detection_array[m].v=-(temp_2*0.01f);//Unit: m/s
       }
-      printf("range rate is %f \n",radar_target_data_.delphi_detection_array[m].v);
+//      printf("range rate is %f \n",radar_target_data_.delphi_detection_array[m].v);
 
       //angle  Unit:degree
       unsigned short temp_A1=tmpdata[1];
@@ -334,7 +334,7 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
         unsigned short temp_5=(temp_4& 0x01FF)+1;
         radar_target_data_.delphi_detection_array[m].angle=-temp_5*0.1f;
       }
-      printf("angle is %f \n",radar_target_data_.delphi_detection_array[m].angle);
+//      printf("angle is %f \n",radar_target_data_.delphi_detection_array[m].angle);
 
       //calculate x,y   Unit: m
       radar_target_data_.delphi_detection_array[m].x=radar_target_data_.delphi_detection_array[m].range*sin(radar_target_data_.delphi_detection_array[m].angle*toRAD);

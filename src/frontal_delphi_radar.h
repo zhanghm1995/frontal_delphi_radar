@@ -22,7 +22,7 @@
 //project headers
 #include "TypeDef.h" //radar and vehicle information struct
 
-#define TOYOTA
+#define HUACHEN
 #ifdef TOYOTA
 //const definition
 const int FRONTAL_RADAR_PORT = 4001;
