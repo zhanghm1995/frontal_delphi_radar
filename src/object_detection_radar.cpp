@@ -323,11 +323,13 @@ void ObjectDetection::show_result(vector<moving_object_millimeter>& valid_obj)//
     CvPoint delphi_pos;
     for(vector<moving_object_millimeter>::iterator it = valid_obj.begin();it!=valid_obj.end();++it)
     {
+      if(it->y>10){
+        continue;
+      }
 //      printf("<object_delphi_radar> enter in show_result...\n");
         //毫米波检测目标点在鸟瞰图上的坐标
         delphi_pos.x = persMap_Middle + (*it).x*METER2PIXEL;
         delphi_pos.y = (PLANE_HEIGHT - 1) - ((*it).y + RADAR2CAR)*METER2PIXEL;
-
         //鸟瞰图中显示白色点
         cvCircle(m_Delphi_img,delphi_pos, 1, cvScalar(255,255, 255), 2);
         //显示目标径向绝对速度，验证是否可以判断静态或动态目标
