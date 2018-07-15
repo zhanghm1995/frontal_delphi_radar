@@ -302,6 +302,10 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
       radar_target_data_.delphi_detection_array[m].range = ((temp_D2)|((temp_D1&0x0007)<<8))*0.1f;
 //      printf("range is %f \n",radar_target_data_.delphi_detection_array[m].range);
 
+      //target width
+      temp_D1 = tmpdata[4];
+      radar_target_data_.delphi_detection_array[m].width = (temp_D1&0x003C)*0.5f;
+
       //range_rate  Unit: m/s
       temp_V1 = tmpdata[6];
       temp_V2 = tmpdata[7];

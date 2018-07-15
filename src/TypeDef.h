@@ -8,6 +8,7 @@ typedef struct _moving_object_millimeter{
 	double angle;			//目标方位角
 	double x;
 	double y;
+	float width;
 	bool valid;
 	//zhanghm:20170911 new add
 	unsigned short status;//目标状态,CAN_TX_TRACK_STATUS

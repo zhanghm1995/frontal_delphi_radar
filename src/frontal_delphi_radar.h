@@ -75,11 +75,6 @@ private:
   //send vehicle info
   Vehicle_Info self_vehicle_info_;
 
-
-
-
-
-
 };
 
 #endif /*FRONTAL_DELPHI_RADAR_H_*/
