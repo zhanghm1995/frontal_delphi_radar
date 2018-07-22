@@ -258,7 +258,7 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
     	}
     	if(temp_A == 0x0080){
     		unsigned short temp_a0 = ((temp_A1<<4)|temp_A2);
-    		unsigned short temp_a1 = ~temp_a1;
+    		unsigned short temp_a1 = ~temp_a0;
     		unsigned short temp_a2 = (temp_a1&0x07FF)+1;
     		radar_target_data_.ESR_yaw_rate = -(temp_a2*0.0625f);
     	}
