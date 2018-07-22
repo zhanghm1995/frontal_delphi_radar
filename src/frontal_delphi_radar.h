@@ -32,8 +32,9 @@ const int FRONTAL_RADAR_LISTEN_PORT = 8101; //local listen port
 #ifdef HUACHEN
 //const definition
 const int FRONTAL_RADAR_PORT = 4001;
-const int FRONTAL_RADAR_LISTEN_PORT = 8010; //local listen port
+const int FRONTAL_RADAR_LISTEN_PORT = 9010; //local listen port
 #endif
+
 
 const short RADAR_DATA_BUFFER = 650; //buffer 1000 bytes
 
@@ -54,7 +55,7 @@ public:
   void set_self_vehicle_info(const Vehicle_Info& vehicle_info);
 private:
   void Proc_Radar_Data();//important! parse radar data
-  void Parse_Radar_Data();
+
   bool Send_Vehicle_Info();//send vehicle information to radar
   bool Send_Triggle_Signal();//send triggle signal to radar to get normal data
 
@@ -73,11 +74,6 @@ private:
   delphi_radar_target radar_target_data_;//final output
   //send vehicle info
   Vehicle_Info self_vehicle_info_;
-
-
-
-
-
 
 };
 

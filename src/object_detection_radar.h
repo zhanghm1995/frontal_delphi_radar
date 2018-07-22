@@ -21,7 +21,7 @@
 using std::vector;
 
 #define NUM 64  //毫米波雷达总的检测目标数
-#define METER2PIXEL 5 //1米为5个像素点，根据相机标定参数来定
+#define METER2PIXEL 5 //1米为5个像素点，根据相机标定参数来定,每个像素间隔0.2m，即像素分辨率为20cm。
 #define OBJECT_WIDTH 2 //默认实际车宽为2米
 #define PLANE_WIDTH 401  //鸟瞰图
 #define PLANE_HEIGHT 601
@@ -43,13 +43,14 @@ const int T2 = 20;
 
 class ObjectDetection{
 public:
+  //constructors
   ObjectDetection(void);
   ~ObjectDetection(void);
 
 public:
   //类数据获取
-  void get_radar_Data(delphi_radar_target& radar,Vehicle_Info& _vehicle_info);//在线获取毫米波数据和车辆信息
-  void get_radar_Data(const delphi_radar_target& radar);//在线获取毫米波数据
+  void set_radar_Data(delphi_radar_target& radar,Vehicle_Info& _vehicle_info);//在线获取毫米波数据和车辆信息
+  void set_radar_data(const delphi_radar_target& radar);//在线获取毫米波数据
 
   void show_result(moving_object_millimeter& obj_interest); //得到最终显示画面
   void show_result(vector<moving_object_millimeter>& valid_obj);//显示全部有效目标
@@ -64,6 +65,11 @@ public:
 
   moving_object_millimeter getSendData(); //获得最终需要发送的目标
 
+  /************************/
+  /*Visualiz related*/
+  void DisplayAll(); //控制最终显示
+  void DrawCommonElements();//绘制基本要素，大家共享的信息，如一些标题，文字说明等
+  /*************************/
 private:
   //功能函数
 
@@ -83,10 +89,13 @@ public:
   bool save_flag;
   IplImage* m_Delphi_img_bak; //用于存储绘制好基本要素的雷达图
   IplImage* m_Delphi_img; //雷达点鸟瞰图
-  IplImage* m_Obj_Interest_img; //感兴趣目标雷达鸟瞰图，此处指正前方目标
+  IplImage* m_Delphi_img_compare; //用于调参对比的雷达图
 
-  moving_object_millimeter delphi_detection_array[NUM];//获取的毫米波雷达数据
+  //从雷达获取的信息
+  unsigned short m_ACC_ID;
+  moving_object_millimeter delphi_detection_array[NUM];//获取的毫米波雷达目标数据
   Vehicle_Info vehicle_info_; //获得的自身车辆信息
+  float vehicle_speed_origin_; //原始车速
   moving_object_millimeter final_obj;
   FILE* fpp;
   //实际处理的雷达和车辆信息数据
@@ -103,7 +112,8 @@ public:
   vector<moving_object_millimeter> vecObj_ACC;
   vector<double> vecObj_Distance;
 
-  unsigned short m_ACC_ID;
+
+
 
   int m_frameCount;
   int m_ACC_Count; //判断连续获得ACC目标的帧数

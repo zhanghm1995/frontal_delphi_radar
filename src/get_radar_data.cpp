@@ -3,12 +3,13 @@
 // Email    : zhanghm_1995@qq.com
 // Version  :
 // Copyright    :
-// Descriptoin  :
+// Descriptoin  : get vehicle and radar data, and publish them in a ROS message
 //======================================================================
 #include <iostream>
 //ROS
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
+#include <std_msgs/Float32.h>
 #include "sensor_driver_msgs/ECUData.h"//ECUData
 //Boost
 #include <boost/algorithm/string.hpp>
@@ -56,13 +57,15 @@ public:
 
 
 
-  void ECUDataHandler(const sensor_driver_msgs::ECUDataConstPtr& ecu_data_msg) //EUC数据
+  void ECUDataHandler(const sensor_driver_msgs::ECUDataConstPtr& ecu_data_msg) //ECU数据
   {
+    ROS_INFO("<get_radar_data> ECUData callback...");//indicate receive ECU data
     vehicle_info_received_.vehicle_speed = ecu_data_msg->fForwardVel;//车速, m/s
-
   }
+
   void ImuDataHandler(const sensor_msgs::ImuConstPtr& imu_data_msg)
   {
+    ROS_INFO("<get_radar_data> ImuData callback...");//indicate receive Imu data
     //惯导横摆角速度逆时针为正，毫米波雷达要求顺时针为正
     vehicle_info_received_.yaw_rate = (-imu_data_msg->angular_velocity.z)*180.0/3.1415926; //横摆角速度, degree/s
   }
@@ -71,7 +74,7 @@ public:
   {
     bool flag = frontal_delphi_receiver_.Init();//build connection to MMW radar
     if(flag == true){
-      cout<<"[INFO] MMW Radar UDP socket has been built!"<<endl;
+      cout<<"[INFO] <get_radar_data> MMW Radar UDP socket has been built!"<<endl;
     }
     else{
       cout<<"error"<<endl;
@@ -87,7 +90,7 @@ public:
 
   }
   void PublishData(){
-    ros::Rate rate(50);
+	  ros::Rate rate(25);
     while(!processthreadfinished_){
       //data publish
       delphi_radar_target radar_data=frontal_delphi_receiver_.radar_target_data();
@@ -108,6 +111,10 @@ public:
         radar_point_msg.moving_slow = radar_data.delphi_detection_array[i].moving_slow;
         radar_data_msg.delphi_detection_array[i]=radar_point_msg;
       }
+      radar_data_msg.ESR_vehicle_speed = radar_data.ESR_vehicle_speed;
+      radar_data_msg.ESR_yaw_rate = radar_data.ESR_yaw_rate;
+      radar_data_msg.vehicle_speed_origin = radar_data.vehicle_speed_origin;
+      radar_data_msg.yaw_rate_origin = radar_data.yaw_rate_origin;
       radar_data_msg.header.stamp = ros::Time::now();
       radar_data_msg.ACC_Target_ID = radar_data.ACC_Target_ID;
       pubRadarData_.publish(radar_data_msg);

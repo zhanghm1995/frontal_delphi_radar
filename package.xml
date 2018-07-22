@@ -17,13 +17,10 @@
   <build_depend>message_generation</build_depend> 
   <exec_depend>message_runtime</exec_depend>
 
-  <depend>ivcommon</depend>
   <depend>sensor_driver_msgs</depend>
-  <depend>sensor_driver</depend>
   <depend>eigen_conversions</depend>
   <depend>geometry_msgs</depend>
   <depend>libgflags-dev</depend>
-  <depend>libgoogle-glog-dev</depend>
   <depend>nav_msgs</depend>
   <depend>robot_state_publisher</depend>
   <depend>rosbag</depend>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <param name="robot_description"
+    textfile="$(find sensor_driver)/urdf/multivelodyne_3d.urdf" />
+    
+  <node name="robot_state_publisher" pkg="robot_state_publisher"
+    type="robot_state_publisher" />
+    
+  <arg name="rviz" default="true" />
+
+
+  <arg name="configfile" default="$(find sensor_driver)/config/configmulti.xml" />
+  <arg name="logdir" default="--log_dir=/home/zhanghm/catkin_ws/log" />
+  <arg name="glogparam" default="--logtostderr=0  --colorlogtostderr=1 --stderrthreshold=5   $(arg logdir)" />
+
+  <node pkg="sensor_driver" type="masternode" name="masternode" args="$(arg glogparam)" output="screen">
+  	<param name="config_file" value="$(arg configfile)"/>
+  </node>
+
+  <node pkg="sensor_driver" type="getecudata" name="getecudata" args="--logtostderr=0  --colorlogtostderr=1 --stderrthreshold=2   $(arg logdir)" output="screen">
+  </node>
+  
+  <node pkg="sensor_driver" type="getinsdata" name="getinsdata" args="--logtostderr=0  --colorlogtostderr=1 --stderrthreshold=2   $(arg logdir)" output="screen">
+  </node>
+
+  <node pkg="frontal_delphi_radar" type="frontal_delphi_radar" name="frontal_delphi_radar" args="--logtostderr=0  --colorlogtostderr=1 --stderrthreshold=0   $(arg logdir)" output="screen">
+  </node>
+  
+  <node pkg="frontal_delphi_radar" type="get_radar_data" name="get_radar_data" args="--logtostderr=0  --colorlogtostderr=1 --stderrthreshold=0   $(arg logdir)" output="screen">
+  </node>
+
+
+
+</launch>

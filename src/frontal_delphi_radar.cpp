@@ -4,7 +4,7 @@
 #include <math.h>
 
 #ifdef HUACHEN
-const char* FRONTAL_RADAR_IP = "192.168.0.178";
+const char* FRONTAL_RADAR_IP = "192.168.1.25";
 #endif
 
 #ifdef TOYOTA
@@ -48,7 +48,7 @@ bool FrontalDelphiRadar::Init(){
   myaddr_.sin_port = htons(FRONTAL_RADAR_LISTEN_PORT);
   myaddr_.sin_addr.s_addr = htonl(INADDR_ANY);
   //enable address reuse
-  int ret,on;
+  int ret,on=1;
   ret = setsockopt(radar_socket_,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
 
   //3)bind socket to specific address
@@ -133,14 +133,19 @@ bool FrontalDelphiRadar::Send_Triggle_Signal(){
 }
 
 bool FrontalDelphiRadar::Send_Vehicle_Info(){
+	printf("[INFO] <frontal_delphi_radar> send vehicle info to radar...\n");
   //vehicle info value assignment
    //车速
    int speed_can = (int)(self_vehicle_info_.vehicle_speed/0.0625f+0.5f);
+   unsigned char bfsign = 0; //车速方向，0——向前，1——向后
+   if(self_vehicle_info_.vehicle_speed<0) bfsign = 1;
+   radar_target_data_.vehicle_speed_origin = self_vehicle_info_.vehicle_speed;
    //方向盘转角
    float steer_phi = self_vehicle_info_.steering_angle;
    unsigned char steersign = steer_phi>0?1:0;
    short steer_can = (short)abs(steer_phi);
-   unsigned char bfsign = 0; //默认为0即可
+
+
    //横摆角速度
    float yawrate_phi = self_vehicle_info_.yaw_rate; //0.2用来调整偏差，根据实际情况设定
    if(yawrate_phi<-128)
@@ -151,6 +156,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    {
      yawrate_phi = 127;
    }
+   radar_target_data_.yaw_rate_origin =  self_vehicle_info_.yaw_rate;
    short yawrate_can = (short)(yawrate_phi/0.0625f+0.5f);
    //转弯半径
    int radius;
@@ -162,7 +168,6 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    else{
      radius = (int)(1.0f/(yawrate_phi/180.0f*PI)+0.5f);
    }
-
    //Send info to ID 0x4F0
    unsigned char FI=0b00001000;
    unsigned char tmpCanID1=0b00000000;
@@ -179,7 +184,7 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    send_buf_4F0[5]=(speed_can>>3); //车速, m/s
    send_buf_4F0[6]=(((speed_can&0x07)<<5)|((yawrate_can>>8)&0x0F)|(bfsign<<4));//横摆角速度，行驶方向
    send_buf_4F0[7]=((yawrate_can)&0xFF);//横摆角速度
-   send_buf_4F0[8]=(0x80|(radius>>8));//横摆角速度有效位,转弯半径
+   send_buf_4F0[8]=(0x80|(radius>>8));//横摆角速度有效位,转弯半径,0x80代表横摆角速度有效，0x00代表无效
    send_buf_4F0[9]=(radius&0xFF);//转弯半径
    send_buf_4F0[10]=(0x00|(steersign<<6)|(steer_can>>5));//方向盘转角有效位，方向盘转角方向，方向盘转角
    send_buf_4F0[11]=((steer_can&0x1F)<<3);
@@ -210,9 +215,13 @@ bool FrontalDelphiRadar::Send_Vehicle_Info(){
    unsigned char send_buf_5F2[13];
    memset(send_buf_5F2,0,sizeof(send_buf_5F2));
    send_buf_5F2[0] = 0b00001000;
+   send_buf_5F2[1]=0x00;
+   send_buf_5F2[2]=0x00;
+   send_buf_5F2[3]=0x05;
+   send_buf_5F2[4]=0xF2;
    send_buf_5F2[7] = (10>>1);//长距离模式的角度为10度
    send_buf_5F2[8] = ((10&0x01)<<7)|45;//短距离模式的角度是45度
-   send_buf_5F2[9] = 65; //雷达的安装高度为45cm
+   send_buf_5F2[9] = 55; //雷达的安装高度 cm
    //发送
    send_len = sendto(radar_socket_,send_buf_5F2,sizeof(send_buf_5F2),0,(sockaddr*)&remaddr_,sizeof(remaddr_));
    if(send_len<0){
@@ -238,6 +247,30 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
     /*******************************/
     /*parsing the radar data we want*/
     /*******************************/
+    //get the vehicle info from ESR to validate we have send vehicle info to ESR indeed
+    if(tmpCanID == 0x4E0){
+    	//CAN_TX_YAW_RATE_CALC
+    	unsigned short temp_A1 = tmpdata[5];
+    	unsigned short temp_A2 = tmpdata[6]&0x00F0;
+    	unsigned short temp_A = temp_A1&0x0080;
+    	if(temp_A == 0){
+    		radar_target_data_.ESR_yaw_rate = ((temp_A1<<4)|(temp_A2))*0.0625f;
+    	}
+    	if(temp_A == 0x0080){
+    		unsigned short temp_a0 = ((temp_A1<<4)|temp_A2);
+    		unsigned short temp_a1 = ~temp_a0;
+    		unsigned short temp_a2 = (temp_a1&0x07FF)+1;
+    		radar_target_data_.ESR_yaw_rate = -(temp_a2*0.0625f);
+    	}
+
+    	//CAN_TX_Vehicle_Speed_CALC
+    	temp_A1 = tmpdata[6]&0x0007;
+    	temp_A2 = tmpdata[7];
+    	radar_target_data_.ESR_vehicle_speed = ((temp_A1<<8)|(temp_A2))*0.0625f;
+
+    	printf("yaw_rate from ESR is ++++++++++++++++++++++++++++++++++++++++++%f \n",radar_target_data_.ESR_yaw_rate);
+    	printf("vehicle_speed from ESR is ++++++++++++++++++++++++++++++++++%f \n",radar_target_data_.ESR_vehicle_speed);
+    }
     //get the most dangerous target ID
     unsigned short TrackID_1 = 0,TrackID_2 = 0;
     if(tmpCanID == 0x4E3){
@@ -267,7 +300,11 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
       temp_D1 = tmpdata[2];
       temp_D2 = tmpdata[3];
       radar_target_data_.delphi_detection_array[m].range = ((temp_D2)|((temp_D1&0x0007)<<8))*0.1f;
-      printf("range is %f \n",radar_target_data_.delphi_detection_array[m].range);
+//      printf("range is %f \n",radar_target_data_.delphi_detection_array[m].range);
+
+      //target width
+      temp_D1 = tmpdata[4];
+      radar_target_data_.delphi_detection_array[m].width = (temp_D1&0x003C)*0.5f;
 
       //range_rate  Unit: m/s
       temp_V1 = tmpdata[6];
@@ -280,11 +317,11 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
       if (temp_V==0x0020)
       {
         unsigned short temp_0=((temp_V1&0x003F) <<8)|temp_V2;
-        unsigned short temp_1=temp_0 - 1;
-        unsigned short temp_2=(~temp_1) & 0x1FFF;
+        unsigned short temp_1=~temp_0;
+        unsigned short temp_2=(temp_1 & 0x1FFF)+1;
         radar_target_data_.delphi_detection_array[m].v=-(temp_2*0.01f);//Unit: m/s
       }
-      printf("range rate is %f \n",radar_target_data_.delphi_detection_array[m].v);
+//      printf("range rate is %f \n",radar_target_data_.delphi_detection_array[m].v);
 
       //angle  Unit:degree
       unsigned short temp_A1=tmpdata[1];
@@ -297,11 +334,11 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
       if(temp_A3==0x0010)
       {
         unsigned short temp_3=((temp_A1&0x000F)<<5)|((temp_A2&0x00F8)>>3);
-        unsigned short temp_4=temp_3 - 1;
-        unsigned short temp_5=(~temp_4) & 0x01FF;
+        unsigned short temp_4=~temp_3;
+        unsigned short temp_5=(temp_4& 0x01FF)+1;
         radar_target_data_.delphi_detection_array[m].angle=-temp_5*0.1f;
       }
-      printf("angle is %f \n",radar_target_data_.delphi_detection_array[m].angle);
+//      printf("angle is %f \n",radar_target_data_.delphi_detection_array[m].angle);
 
       //calculate x,y   Unit: m
       radar_target_data_.delphi_detection_array[m].x=radar_target_data_.delphi_detection_array[m].range*sin(radar_target_data_.delphi_detection_array[m].angle*toRAD);
@@ -491,281 +528,6 @@ void FrontalDelphiRadar::Proc_Radar_Data(){
   }
 
 }
-void FrontalDelphiRadar::Parse_Radar_Data()
-{
-  int can_frame_count = recv_len_/13;//each can frame contains 13 bytes
- //  printf("recv_len_ is %d ========can_frame_count is %d \n",recv_len_,can_frame_count);
-   for(int i=0;i<can_frame_count;++i){//a udp data frame may contain numbers of CAN frames
-     unsigned char* buf = &(radar_data_buf_[i*13]);
-     unsigned int tmpCanID = 0;
-     unsigned char tmpdata[8] = {0};
-     tmpCanID=radar_data_buf_[1]<<24|radar_data_buf_[2]<<16|radar_data_buf_[3]<<8|radar_data_buf_[4];
-     tmpdata[0]=radar_data_buf_[5];tmpdata[1]=radar_data_buf_[6];tmpdata[2]=radar_data_buf_[7];
-     tmpdata[3]=radar_data_buf_[8];tmpdata[4]=radar_data_buf_[9];tmpdata[5]=radar_data_buf_[10];
-     tmpdata[6]=radar_data_buf_[11];tmpdata[7]=radar_data_buf_[12];
-
-     /*******************************/
-     /*parsing the radar data we want*/
-     /*******************************/
-     //get the most dangerous target ID
-     unsigned short TrackID_1 = 0,TrackID_2 = 0;//important!! must initialize!!!
-     if(tmpCanID == 0x4E3){
-       TrackID_1 = tmpdata[1];//动态ACC目标
-       TrackID_2 = tmpdata[7];//静态ACC目标
-     }
-     radar_target_data_.ACC_Target_ID = TrackID_1; //choose dynamic ACC target first
-     if(TrackID_1 == 0){
-       radar_target_data_.ACC_Target_ID = TrackID_2;
-     }
-     //get the target CAN ID data
-     static int m = 0;
-     if(tmpCanID==0x500+m)
-     {
-       radar_target_data_.delphi_detection_array[m].target_ID = m+1; //target_ID = 1~64
-       //target status
-       unsigned short temp_S1 = tmpdata[1];
-       unsigned short temp_S2 = temp_S1&0x00E0;
-       radar_target_data_.delphi_detection_array[m].status = temp_S2>>5;
-       printf("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm is %d \n",m);
-       unsigned short temp_D1;
-       unsigned short temp_D2;
-       unsigned short temp_V1;
-       unsigned short temp_V2;
-       unsigned short temp_V3;
-       //range  Unit: m
-       temp_D1 =tmpdata[2];
-       temp_D2 = tmpdata[3];
-       radar_target_data_.delphi_detection_array[m].range = ((temp_D2)|((temp_D1&0x0007)<<8))*0.1f;
-       printf("range is %f \n",radar_target_data_.delphi_detection_array[m].range);
-
-       //range_rate  Unit: m/s
-       temp_V1 = tmpdata[6];
-       temp_V2 = tmpdata[7];
-       unsigned short  temp_V=temp_V1&0x0020;
-       if (temp_V==0)
-       {
-         radar_target_data_.delphi_detection_array[m].v =(temp_V2|((temp_V1&0x003F)<<8))*0.01f;//Unit: m/s
-       }
-       if (temp_V==0x0020)
-       {
-         unsigned short temp_0=((temp_V1&0x003F) <<8)|temp_V2;
-         unsigned short temp_1=temp_0 - 1;
-         unsigned short temp_2=(~temp_1) & 0x1FFF;
-         radar_target_data_.delphi_detection_array[m].v=-(temp_2*0.01f);//Unit: m/s
-       }
-       printf("range rate is %f \n",radar_target_data_.delphi_detection_array[m].v);
-
-       //angle  Unit:degree
-       unsigned short temp_A1=tmpdata[1];
-       unsigned short temp_A2=tmpdata[2];
-       unsigned short temp_A3=temp_A1&0x0010;
-       if (temp_A3==0)
-       {
-         radar_target_data_.delphi_detection_array[m].angle=(((temp_A1&0x000F)<<5)|((temp_A2&0x00F8)>>3))*0.1f;
-       }
-       if(temp_A3==0x0010)
-       {
-         unsigned short temp_3=((temp_A1&0x000F)<<5)|((temp_A2&0x00F8)>>3);
-         unsigned short temp_4=temp_3 - 1;
-         unsigned short temp_5=(~temp_4) & 0x01FF;
-         radar_target_data_.delphi_detection_array[m].angle=-temp_5*0.1f;
-       }
-       printf("angle is %f \n",radar_target_data_.delphi_detection_array[m].angle);
-
-       //calculate x,y   Unit: m
-       radar_target_data_.delphi_detection_array[m].x=radar_target_data_.delphi_detection_array[m].range*sin(radar_target_data_.delphi_detection_array[m].angle*toRAD);
-       radar_target_data_.delphi_detection_array[m].y=radar_target_data_.delphi_detection_array[m].range*cos(radar_target_data_.delphi_detection_array[m].angle*toRAD);
-
-       ++m;
-       if(m==64)
-       {
-         m = 0;
-       }
-     }
-
-#if 1 //解析一些运动属性
-    if(tmpCanID==0x540)
-    {
-      ////先解析Group_ID
-      unsigned short temp_A1 = tmpdata[0];
-      unsigned short temp_A2 = temp_A1&0x000F; //取出后四位
-      switch(temp_A2)
-      {
-      case 0://第0组
-        for(int j = 0;j<7;++j)
-        {
-          //解析Moving状态
-          unsigned short temp_D1 = (tmpdata[j+1])&0x0020;
-          unsigned short temp_D2 = temp_D1>>5;
-          radar_target_data_.delphi_detection_array[j].moving = temp_D2;
-          //解析Movable_fast状态
-          unsigned short temp_S1 = (tmpdata[j+1])&0x0080;
-          unsigned short temp_S2 = temp_S1>>7;
-          radar_target_data_.delphi_detection_array[j].moving_fast=temp_S2;
-          //解析Movable_slow状态
-          temp_S1 = (tmpdata[j+1])&0x0040;
-          temp_S2 = temp_S1>>6;
-          radar_target_data_.delphi_detection_array[j].moving_slow=temp_S2;
-
-        }
-        break;
-      case 1://第1组
-        for(int j = 7;j<14;++j)
-        {
-          unsigned short temp_D1 = (tmpdata[j-7+1])&0x0020;
-          unsigned short temp_D2 = temp_D1>>5;
-          radar_target_data_.delphi_detection_array[j].moving = temp_D2;
-
-          //解析Movable_fast状态
-          unsigned short temp_S1 = (tmpdata[j-7+1])&0x0080;
-          unsigned short temp_S2 = temp_S1>>7;
-          radar_target_data_.delphi_detection_array[j].moving_fast=temp_S2;
-          //解析Movable_slow状态
-          temp_S1 = (tmpdata[j-7+1])&0x0040;
-          temp_S2 = temp_S1>>6;
-          radar_target_data_.delphi_detection_array[j].moving_slow=temp_S2;
-        }
-        break;
-      case 2://第2组
-        for(int j = 14;j<21;++j)
-        {
-          unsigned short temp_D1 = (tmpdata[j-14+1])&0x0020;
-          unsigned short temp_D2 = temp_D1>>5;
-          radar_target_data_.delphi_detection_array[j].moving = temp_D2;
-
-          //解析Movable_fast状态
-          unsigned short temp_S1 = (tmpdata[j-14+1])&0x0080;
-          unsigned short temp_S2 = temp_S1>>7;
-          radar_target_data_.delphi_detection_array[j].moving_fast=temp_S2;
-          //解析Movable_slow状态
-          temp_S1 = (tmpdata[j-14+1])&0x0040;
-          temp_S2 = temp_S1>>6;
-          radar_target_data_.delphi_detection_array[j].moving_slow=temp_S2;
-        }
-        break;
-      case 3://第3组
-        for(int j = 21;j<28;++j)
-        {
-          unsigned short temp_D1 = (tmpdata[j-21+1])&0x0020;
-          unsigned short temp_D2 = temp_D1>>5;
-          radar_target_data_.delphi_detection_array[j].moving = temp_D2;
-
-          //解析Movable_fast状态
-          unsigned short temp_S1 = (tmpdata[j-21+1])&0x0080;
-          unsigned short temp_S2 = temp_S1>>7;
-          radar_target_data_.delphi_detection_array[j].moving_fast=temp_S2;
-          //解析Movable_slow状态
-          temp_S1 = (tmpdata[j-21+1])&0x0040;
-          temp_S2 = temp_S1>>6;
-          radar_target_data_.delphi_detection_array[j].moving_slow=temp_S2;
-        }
-        break;
-      case 4://第4组
-        for(int j = 28;j<35;++j)
-        {
-          unsigned short temp_D1 = (tmpdata[j-28+1])&0x0020;
-          unsigned short temp_D2 = temp_D1>>5;
-          radar_target_data_.delphi_detection_array[j].moving = temp_D2;
-
-          //解析Movable_fast状态
-          unsigned short temp_S1 = (tmpdata[j-28+1])&0x0080;
-          unsigned short temp_S2 = temp_S1>>7;
-          radar_target_data_.delphi_detection_array[j].moving_fast=temp_S2;
-          //解析Movable_slow状态
-          temp_S1 = (tmpdata[j-28+1])&0x0040;
-          temp_S2 = temp_S1>>6;
-          radar_target_data_.delphi_detection_array[j].moving_slow=temp_S2;
-        }
-        break;
-      case 5://第5组
-        for(int j = 35;j<42;++j)
-        {
-          unsigned short temp_D1 = (tmpdata[j-35+1])&0x0020;
-          unsigned short temp_D2 = temp_D1>>5;
-          radar_target_data_.delphi_detection_array[j].moving = temp_D2;
-
-          //解析Movable_fast状态
-          unsigned short temp_S1 = (tmpdata[j-35+1])&0x0080;
-          unsigned short temp_S2 = temp_S1>>7;
-          radar_target_data_.delphi_detection_array[j].moving_fast=temp_S2;
-          //解析Movable_slow状态
-          temp_S1 = (tmpdata[j-35+1])&0x0040;
-          temp_S2 = temp_S1>>6;
-          radar_target_data_.delphi_detection_array[j].moving_slow=temp_S2;
-        }
-        break;
-      case 6://第6组
-        for(int j = 42;j<49;++j)
-        {
-          unsigned short temp_D1 = (tmpdata[j-42+1])&0x0020;
-          unsigned short temp_D2 = temp_D1>>5;
-          radar_target_data_.delphi_detection_array[j].moving = temp_D2;
-
-          //解析Movable_fast状态
-          unsigned short temp_S1 = (tmpdata[j-42+1])&0x0080;
-          unsigned short temp_S2 = temp_S1>>7;
-          radar_target_data_.delphi_detection_array[j].moving_fast=temp_S2;
-          //解析Movable_slow状态
-          temp_S1 = (tmpdata[j-42+1])&0x0040;
-          temp_S2 = temp_S1>>6;
-          radar_target_data_.delphi_detection_array[j].moving_slow=temp_S2;
-        }
-        break;
-      case 7://第7组
-        for(int j = 49;j<56;++j)
-        {
-          unsigned short temp_D1 = (tmpdata[j-49+1])&0x0020;
-          unsigned short temp_D2 = temp_D1>>5;
-          radar_target_data_.delphi_detection_array[j].moving = temp_D2;
-
-          //解析Movable_fast状态
-          unsigned short temp_S1 = (tmpdata[j-49+1])&0x0080;
-          unsigned short temp_S2 = temp_S1>>7;
-          radar_target_data_.delphi_detection_array[j].moving_fast=temp_S2;
-          //解析Movable_slow状态
-          temp_S1 = (tmpdata[j-49+1])&0x0040;
-          temp_S2 = temp_S1>>6;
-          radar_target_data_.delphi_detection_array[j].moving_slow=temp_S2;
-        }
-        break;
-      case 8://第8组
-        for(int j = 56;j<63;++j)
-        {
-          unsigned short temp_D1 = (tmpdata[j-56+1])&0x0020;
-          unsigned short temp_D2 = temp_D1>>5;
-          radar_target_data_.delphi_detection_array[j].moving = temp_D2;
-
-          //解析Movable_fast状态
-          unsigned short  temp_S1 = (tmpdata[j-56+1])&0x0080;
-          unsigned short temp_S2 = temp_S1>>7;
-          radar_target_data_.delphi_detection_array[j].moving_fast=temp_S2;
-          //解析Movable_slow状态
-          temp_S1 = (tmpdata[j-56+1])&0x0040;
-          temp_S2 = temp_S1>>6;
-          radar_target_data_.delphi_detection_array[j].moving_slow=temp_S2;
-        }
-        break;
-      case 9://第9组
-        unsigned short temp_D1 = (tmpdata[1])&0x0020;
-        unsigned short temp_D2 = temp_D1>>5;
-        radar_target_data_.delphi_detection_array[63].moving=temp_D2;
-
-        //解析Movable_fast状态
-        unsigned short temp_S1 = (tmpdata[1])&0x0080;
-        unsigned short temp_S2 = temp_S1>>7;
-        radar_target_data_.delphi_detection_array[63].moving_fast=temp_S2;
-        //解析Movable_slow状态
-        temp_S1 = (tmpdata[1])&0x0040;
-        temp_S2 = temp_S1>>6;
-        radar_target_data_.delphi_detection_array[63].moving_slow=temp_S2;
-        break;
-      }//end switch
-    }//end if(tmpCanID==0x540)
-#endif
-
-   }
-
-}
 
 delphi_radar_target FrontalDelphiRadar::radar_target_data(){
   return this->radar_target_data_;
@@ -780,6 +542,9 @@ void FrontalDelphiRadar::set_self_vehicle_info(const double& yaw_rate,const doub
   self_vehicle_info_.steering_angle = steering_angle;
 }
 void FrontalDelphiRadar::set_self_vehicle_info(const Vehicle_Info& vehicle_info){
+	printf("[INFO] <frontal_delphi_radar> ESR has received vehicle info, vehicle speed is %.6f,yaw rate is %.6f\n",
+			vehicle_info.vehicle_speed,
+			vehicle_info.yaw_rate);
   self_vehicle_info_ = vehicle_info;
 }
 
