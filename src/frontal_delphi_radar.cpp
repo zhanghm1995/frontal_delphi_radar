@@ -37,6 +37,7 @@ FrontalDelphiRadar::FrontalDelphiRadar(){
 FrontalDelphiRadar::~FrontalDelphiRadar(){
 
 }
+
 bool FrontalDelphiRadar::Init(){
   //1)create radar socket
   if((radar_socket_=socket(AF_INET,SOCK_DGRAM,0))<0){
@@ -57,8 +58,6 @@ bool FrontalDelphiRadar::Init(){
     close(radar_socket_);
     return false;
   }
-
-
   return true;
 }
 

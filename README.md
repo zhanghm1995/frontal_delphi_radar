@@ -1,6 +1,7 @@
 # frontal_delphi_radar
-## 毫米波雷达目标属性含义
-对于每一个雷达目标点，有如下属性
+This is a ros package for Delphi Millimeter Wave Radar(MMW) data parsing and visualizing.
+## MMW target properties definition
+For every single radar target, we have define below properties:
 `target_ID`
 `range`
 `v`
@@ -17,14 +18,14 @@
 ## ROS related
 ## Nodes
 ### Node: get_radar_data(get_radar_data.cpp)
-获取并解析雷达数据，发布毫米波雷达数据话题
+Obtain and parse radar CAN data, and publish the radar messages related topics
 #### Subscribed Topics
 - **`/ecu_data`**([std_msgs::Float32])
 - **`/imudata`**([sensor_msgs::Imu])
 #### Published Topics
 - **`radardata`**([frontal_delphi_radar::RadarData])
 ### Node: frontal_delphi_radar（main.cpp)
-雷达点可视化
+Radar targets visualizer
 #### Subscribed Topics
 - **`/radardata`**([frontal_delphi_radar::RadarData])
 #### Published Topics
